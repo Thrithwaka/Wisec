@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Analytics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #ccd6f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            color: #64ffda;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            color: #8892b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #8892b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(83, 62, 232, 0.2);
+            color: #533ee8;
+            border-left: 3px solid #533ee8;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #64ffda;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        /* Analytics Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: #ccd6f6;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 10px;
+            color: #64ffda;
+        }
+
+        .time-filter {
+            background: rgba(83, 62, 232, 0.2);
+            border: 1px solid rgba(83, 62, 232, 0.3);
+            color: #533ee8;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 15px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #64ffda;
+        }
+
+        .stat-label {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Full Width Charts */
+        .full-width-card {
+            grid-column: 1 / -1;
+            height: 400px;
+        }
+
+        .full-width-card .chart-container {
+            height: 320px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>WISEC</h1>
+                <span>Admin Panel</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.admin_dashboard_simple') }}" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analytics_simple') }}" class="nav-link active">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.live_monitoring_simple') }}" class="nav-link">
+                        <i class="fas fa-eye"></i>
+                        Live Monitoring
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.security_simple') }}" class="nav-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Security Incidents
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.users_simple') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.approval_requests') }}" class="nav-link">
+                        <i class="fas fa-user-check"></i>
+                        Approval Requests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.system_simple') }}" class="nav-link">
+                        <i class="fas fa-server"></i>
+                        System Monitor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        Back to Main
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header animate__animated animate__fadeInDown">
+                <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+                <p>Comprehensive system analytics and insights</p>
+            </header>
+
+            <!-- Analytics Grid -->
+            <div class="analytics-grid">
+                <!-- User Activity Chart -->
+                <div class="analytics-card animate__animated animate__fadeInUp">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-users"></i>
+                            User Activity
+                        </div>
+                        <select class="time-filter" onchange="updateUserActivity(this.value)">
+                            <option value="24h">Last 24h</option>
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d">Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="userActivityChart"></canvas>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value" id="active-users">{{ stats.active_users or 0 }}</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="new-registrations">{{ stats.new_registrations or 0 }}</div>
+                            <div class="stat-label">New Registrations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WiFi Scan Statistics -->
+                <div class="analytics-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-wifi"></i>
+                            WiFi Scans
+                        </div>
+                        <select class="time-filter" onchange="updateScanStats(this.value)">
+                            <option value="24h">Last 24h</option>
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d">Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="scanStatsChart"></canvas>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-scans">{{ stats.total_scans or 0 }}</div>
+                            <div class="stat-label">Total Scans</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="vulnerability-found">{{ stats.vulnerabilities_found or 0 }}</div>
+                            <div class="stat-label">Vulnerabilities</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Threats -->
+                <div class="analytics-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Security Threats
+                        </div>
+                        <select class="time-filter" onchange="updateThreatStats(this.value)">
+                            <option value="24h">Last 24h</option>
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d">Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="threatStatsChart"></canvas>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value" id="critical-threats">{{ stats.critical_threats or 0 }}</div>
+                            <div class="stat-label">Critical</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="resolved-threats">{{ stats.resolved_threats or 0 }}</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Model Performance -->
+                <div class="analytics-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-brain"></i>
+                            AI Performance
+                        </div>
+                        <select class="time-filter" onchange="updateAIStats(this.value)">
+                            <option value="24h">Last 24h</option>
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d">Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="aiPerformanceChart"></canvas>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value" id="predictions-made">{{ stats.predictions_made or 0 }}</div>
+                            <div class="stat-label">Predictions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="accuracy-rate">{{ stats.accuracy_rate or 0 }}%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Homepage Views Full Width Chart -->
+                <div class="analytics-card full-width-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-eye"></i>
+                            Homepage Live View Analytics
+                        </div>
+                        <select class="time-filter" onchange="updateHomepageViews(this.value)">
+                            <option value="1h">Last Hour</option>
+                            <option value="24h">Last 24h</option>
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d">Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="homepageViewsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- System Performance Full Width Chart -->
+                <div class="analytics-card full-width-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-server"></i>
+                            System Performance Metrics
+                        </div>
+                        <select class="time-filter" onchange="updateSystemMetrics(this.value)">
+                            <option value="1h">Last Hour</option>
+                            <option value="24h">Last 24h</option>
+                            <option value="7d">Last 7 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="systemMetricsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart instances
+        let userActivityChart, scanStatsChart, threatStatsChart, aiPerformanceChart, homepageViewsChart, systemMetricsChart;
+
+        // Initialize all charts
+        function initializeCharts() {
+            // User Activity Chart
+            const userCtx = document.getElementById('userActivityChart').getContext('2d');
+            userActivityChart = new Chart(userCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Active Users',
+                        data: [],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ccd6f6' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8892b0' } },
+                        y: { ticks: { color: '#8892b0' } }
+                    }
+                }
+            });
+
+            // Scan Statistics Chart
+            const scanCtx = document.getElementById('scanStatsChart').getContext('2d');
+            scanStatsChart = new Chart(scanCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'WiFi Scans',
+                        data: [],
+                        backgroundColor: 'rgba(83, 62, 232, 0.8)',
+                        borderColor: '#533ee8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ccd6f6' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8892b0' } },
+                        y: { ticks: { color: '#8892b0' } }
+                    }
+                }
+            });
+
+            // Threat Statistics Chart
+            const threatCtx = document.getElementById('threatStatsChart').getContext('2d');
+            threatStatsChart = new Chart(threatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [5, 12, 8, 3],
+                        backgroundColor: ['#ff4757', '#ff6b47', '#ffa726', '#66bb6a'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#ccd6f6' }
+                        }
+                    }
+                }
+            });
+
+            // AI Performance Chart
+            const aiCtx = document.getElementById('aiPerformanceChart').getContext('2d');
+            aiPerformanceChart = new Chart(aiCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: [],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ccd6f6' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8892b0' } },
+                        y: { 
+                            ticks: { color: '#8892b0' },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Homepage Views Chart
+            const homepageCtx = document.getElementById('homepageViewsChart').getContext('2d');
+            homepageViewsChart = new Chart(homepageCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Page Views',
+                        data: [],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ccd6f6' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8892b0' } },
+                        y: { ticks: { color: '#8892b0' } }
+                    }
+                }
+            });
+
+            // System Metrics Chart
+            const systemCtx = document.getElementById('systemMetricsChart').getContext('2d');
+            systemMetricsChart = new Chart(systemCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'CPU Usage %',
+                            data: [],
+                            borderColor: '#ff4757',
+                            backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Memory Usage %',
+                            data: [],
+                            borderColor: '#64ffda',
+                            backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Disk Usage %',
+                            data: [],
+                            borderColor: '#533ee8',
+                            backgroundColor: 'rgba(83, 62, 232, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ccd6f6' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8892b0' } },
+                        y: { 
+                            ticks: { color: '#8892b0' },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load analytics data
+        function loadAnalyticsData() {
+            // Load homepage views
+            fetch('/admin/analytics/homepage-views')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateHomepageViewsChart(data.views);
+                    }
+                })
+                .catch(error => console.error('Error loading homepage views:', error));
+
+            // Load user activity
+            fetch('/admin/analytics/user-activity')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateUserActivityChart(data.activity);
+                    }
+                })
+                .catch(error => console.error('Error loading user activity:', error));
+
+            // Load system metrics
+            fetch('/admin/analytics/system-metrics')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemMetricsChart(data.metrics);
+                    }
+                })
+                .catch(error => console.error('Error loading system metrics:', error));
+        }
+
+        function updateHomepageViewsChart(viewsData) {
+            if (homepageViewsChart && viewsData) {
+                homepageViewsChart.data.labels = viewsData.labels || [];
+                homepageViewsChart.data.datasets[0].data = viewsData.views || [];
+                homepageViewsChart.update();
+            }
+        }
+
+        function updateUserActivityChart(activityData) {
+            if (userActivityChart && activityData) {
+                userActivityChart.data.labels = activityData.labels || [];
+                userActivityChart.data.datasets[0].data = activityData.users || [];
+                userActivityChart.update();
+            }
+        }
+
+        function updateSystemMetricsChart(metricsData) {
+            if (systemMetricsChart && metricsData) {
+                systemMetricsChart.data.labels = metricsData.labels || [];
+                systemMetricsChart.data.datasets[0].data = metricsData.cpu || [];
+                systemMetricsChart.data.datasets[1].data = metricsData.memory || [];
+                systemMetricsChart.data.datasets[2].data = metricsData.disk || [];
+                systemMetricsChart.update();
+            }
+        }
+
+        // Filter update functions
+        function updateUserActivity(period) {
+            fetch(`/admin/analytics/user-activity?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateUserActivityChart(data.activity);
+                    }
+                });
+        }
+
+        function updateScanStats(period) {
+            fetch(`/admin/analytics/scan-stats?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && scanStatsChart) {
+                        scanStatsChart.data.labels = data.stats.labels || [];
+                        scanStatsChart.data.datasets[0].data = data.stats.scans || [];
+                        scanStatsChart.update();
+                    }
+                });
+        }
+
+        function updateThreatStats(period) {
+            fetch(`/admin/analytics/threat-stats?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && threatStatsChart) {
+                        threatStatsChart.data.datasets[0].data = data.stats.threats || [5, 12, 8, 3];
+                        threatStatsChart.update();
+                    }
+                });
+        }
+
+        function updateAIStats(period) {
+            fetch(`/admin/analytics/ai-stats?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && aiPerformanceChart) {
+                        aiPerformanceChart.data.labels = data.stats.labels || [];
+                        aiPerformanceChart.data.datasets[0].data = data.stats.accuracy || [];
+                        aiPerformanceChart.update();
+                    }
+                });
+        }
+
+        function updateHomepageViews(period) {
+            fetch(`/admin/analytics/homepage-views?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateHomepageViewsChart(data.views);
+                    }
+                });
+        }
+
+        function updateSystemMetrics(period) {
+            fetch(`/admin/analytics/system-metrics?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemMetricsChart(data.metrics);
+                    }
+                });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadAnalyticsData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadAnalyticsData, 30000);
+        });
+
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: rgba(100, 255, 218, 0.2);
+                border: 1px solid rgba(100, 255, 218, 0.3);
+                color: #64ffda;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                display: none;
+            `;
+            
+            if (window.innerWidth <= 768) {
+                toggleBtn.style.display = 'block';
+                document.body.appendChild(toggleBtn);
+                
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

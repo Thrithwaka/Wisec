@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Wi-Fi Security System</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .login-container {
+            display: flex;
+            width: 900px;
+            max-width: 90vw;
+            height: 600px;
+            max-height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="90" r="2.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-text h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-text p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .security-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .login-right {
+            flex: 1;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-form h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .login-form .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-group input:focus + .input-icon {
+            color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .register-link a:hover {
+            color: #764ba2;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            max-width: 400px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .flash-message.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .flash-message.error {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+        }
+
+        .flash-message.warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+
+        .flash-message.info {
+            background: linear-gradient(135deg, #17a2b8, #6610f2);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading state */
+        .login-btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .login-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                width: 95vw;
+                height: auto;
+                max-height: 95vh;
+            }
+
+            .login-left {
+                padding: 30px 20px;
+                min-height: 200px;
+            }
+
+            .welcome-text h1 {
+                font-size: 2rem;
+            }
+
+            .security-icon {
+                font-size: 3rem;
+            }
+
+            .login-right {
+                padding: 40px 30px;
+            }
+
+            .login-form h2 {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-right {
+                padding: 30px 20px;
+            }
+
+            .form-group input {
+                padding: 12px 15px 12px 45px;
+            }
+
+            .login-btn {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <i class="fas fa-{{ 'check' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'times' }}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="login-container">
+        <!-- Left Side - Welcome -->
+        <div class="login-left">
+            <div class="welcome-text">
+                <div class="security-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1>Welcome Back</h1>
+                <p>Secure your Wi-Fi network with our advanced monitoring system. Login to access your dashboard and protect your digital space.</p>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="login-right">
+            <form class="login-form" method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+                {{ form.hidden_tag() if form }}
+                
+                <h2>Sign In</h2>
+                <p class="subtitle">Enter your credentials to access your account</p>
+
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        {% if form %}
+                            {{ form.email(class="form-control", placeholder="Enter your email address", required=true) }}
+                        {% else %}
+                            <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                        {% endif %}
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                    {% if form and form.email.errors %}
+                        <div class="field-error">
+                            {% for error in form.email.errors %}
+                                <small class="error-text">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        {% if form %}
+                            {{ form.password(class="form-control", placeholder="Enter your password", required=true) }}
+                        {% else %}
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        {% endif %}
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                    {% if form and form.password.errors %}
+                        <div class="field-error">
+                            {% for error in form.password.errors %}
+                                <small class="error-text">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="checkbox-group">
+                    <div class="checkbox-wrapper">
+                        {% if form %}
+                            {{ form.remember_me() }}
+                            {{ form.remember_me.label() }}
+                        {% else %}
+                            <input type="checkbox" id="remember_me" name="remember_me">
+                            <label for="remember_me">Remember me</label>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('auth.forgot_password') }}" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <!-- Login Button -->
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text">Sign In</span>
+                </button>
+
+                <!-- Register Link -->
+                <div class="register-link">
+                    Don't have an account? <a href="{{ url_for('auth.register') }}">Create one here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = loginBtn.querySelector('.btn-text');
+            
+            // Add loading state
+            loginBtn.classList.add('loading');
+            btnText.textContent = 'Signing In...';
+            
+            // Basic validation
+            const email = document.querySelector('input[name="email"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            
+            if (!email || !password) {
+                e.preventDefault();
+                loginBtn.classList.remove('loading');
+                btnText.textContent = 'Sign In';
+                showFlashMessage('Please fill in all fields', 'error');
+                return false;
+            }
+            
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                loginBtn.classList.remove('loading');
+                btnText.textContent = 'Sign In';
+                showFlashMessage('Please enter a valid email address', 'error');
+                return false;
+            }
+        });
+
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                message.style.animation = 'slideOut 0.5s ease-out forwards';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        // Function to show flash messages dynamically
+        function showFlashMessage(message, category) {
+            const flashContainer = document.querySelector('.flash-messages');
+            const flashDiv = document.createElement('div');
+            flashDiv.className = `flash-message ${category}`;
+            
+            const icon = category === 'success' ? 'check' : 
+                        category === 'warning' ? 'exclamation-triangle' : 
+                        category === 'info' ? 'info-circle' : 'times';
+            
+            flashDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            flashContainer.appendChild(flashDiv);
+            
+            setTimeout(function() {
+                flashDiv.style.animation = 'slideOut 0.5s ease-out forwards';
+                setTimeout(function() {
+                    flashDiv.remove();
+                }, 500);
+            }, 4000);
+        }
+
+        // Add slideOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Input focus effects
+        document.querySelectorAll('.form-group input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+
+        // CSRF token handling for AJAX requests
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+        
+        // Optional: Real-time email validation
+        const emailInput = document.querySelector('input[name="email"]');
+        if (emailInput) {
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email && csrfToken) {
+                    // You can add real-time email validation here if needed
+                    // using the API endpoint from your routes
+                }
+            });
+        }
+    </script>
+</body>
+</html>

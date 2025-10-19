@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Live Monitoring</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #ccd6f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            color: #64ffda;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            color: #8892b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #8892b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(83, 62, 232, 0.2);
+            color: #533ee8;
+            border-left: 3px solid #533ee8;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            color: #64ffda;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header-content p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        .live-status {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            animation: pulse 2s infinite;
+        }
+
+        .live-indicator {
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Monitoring Grid */
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .monitoring-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            height: fit-content;
+        }
+
+        .monitoring-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: #ccd6f6;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 10px;
+            color: #64ffda;
+        }
+
+        .refresh-btn {
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            color: #64ffda;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: rotate(180deg);
+        }
+
+        /* Real-time Data Lists */
+        .data-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .data-item:hover {
+            background: rgba(100, 255, 218, 0.05);
+            padding-left: 10px;
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-title {
+            color: #ccd6f6;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            color: #8892b0;
+            font-size: 0.9rem;
+        }
+
+        .item-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .status-warning {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+        }
+
+        .status-danger {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .status-inactive {
+            background: rgba(136, 146, 176, 0.2);
+            color: #8892b0;
+        }
+
+        /* Full Width Cards */
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        .alert-item {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            animation: slideInRight 0.5s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-icon {
+            color: #ff4757;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            color: #ff4757;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .alert-time {
+            color: #8892b0;
+            font-size: 0.8rem;
+        }
+
+        /* Metrics Display */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(83, 62, 232, 0.1);
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #64ffda;
+        }
+
+        .metric-label {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .monitoring-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>WISEC</h1>
+                <span>Admin Panel</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.admin_dashboard_simple') }}" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analytics_simple') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.live_monitoring_simple') }}" class="nav-link active">
+                        <i class="fas fa-eye"></i>
+                        Live Monitoring
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.security_simple') }}" class="nav-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Security Incidents
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.users_simple') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.approval_requests') }}" class="nav-link">
+                        <i class="fas fa-user-check"></i>
+                        Approval Requests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.system_simple') }}" class="nav-link">
+                        <i class="fas fa-server"></i>
+                        System Monitor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        Back to Main
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header animate__animated animate__fadeInDown">
+                <div class="header-content">
+                    <h1><i class="fas fa-eye"></i> Live Monitoring</h1>
+                    <p>Real-time system monitoring and activity tracking</p>
+                </div>
+                <div class="live-status">
+                    <div class="live-indicator"></div>
+                    <span>LIVE</span>
+                </div>
+            </header>
+
+            <!-- Monitoring Grid -->
+            <div class="monitoring-grid">
+                <!-- Active Users -->
+                <div class="monitoring-card animate__animated animate__fadeInUp">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-users"></i>
+                            Active Users
+                        </div>
+                        <button class="refresh-btn" onclick="refreshActiveUsers()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="data-list" id="active-users-list">
+                        {% if active_users %}
+                            {% for user in active_users %}
+                            <div class="data-item">
+                                <div class="item-info">
+                                    <div class="item-title">{{ user.username }}</div>
+                                    <div class="item-details">{{ user.email }} • {{ user.last_activity }}</div>
+                                </div>
+                                <div class="item-status status-active">Online</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="data-item">
+                                <div class="item-info">
+                                    <div class="item-title">No active users</div>
+                                    <div class="item-details">Monitoring system active</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="metrics-row">
+                        <div class="metric-item">
+                            <div class="metric-value" id="users-online">{{ online_count or 0 }}</div>
+                            <div class="metric-label">Online</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="users-total">{{ total_users or 0 }}</div>
+                            <div class="metric-label">Total Users</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Scans -->
+                <div class="monitoring-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-wifi"></i>
+                            WiFi Scans
+                        </div>
+                        <button class="refresh-btn" onclick="refreshScans()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="data-list" id="scans-list">
+                        {% if recent_scans %}
+                            {% for scan in recent_scans %}
+                            <div class="data-item">
+                                <div class="item-info">
+                                    <div class="item-title">{{ scan.network_name or 'Unknown Network' }}</div>
+                                    <div class="item-details">{{ scan.scan_type }} • {{ scan.timestamp.strftime('%H:%M:%S') }}</div>
+                                </div>
+                                <div class="item-status {% if scan.threat_level == 'HIGH' %}status-danger{% elif scan.threat_level == 'MEDIUM' %}status-warning{% else %}status-active{% endif %}">
+                                    {{ scan.threat_level or 'SAFE' }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="data-item">
+                                <div class="item-info">
+                                    <div class="item-title">No recent scans</div>
+                                    <div class="item-details">Scan system ready</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="metrics-row">
+                        <div class="metric-item">
+                            <div class="metric-value" id="scans-today">{{ scans_today or 0 }}</div>
+                            <div class="metric-label">Today</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="scans-hour">{{ scans_hour or 0 }}</div>
+                            <div class="metric-label">Last Hour</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Resources -->
+                <div class="monitoring-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-server"></i>
+                            System Resources
+                        </div>
+                        <button class="refresh-btn" onclick="refreshSystemResources()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="metrics-row">
+                        <div class="metric-item">
+                            <div class="metric-value" id="cpu-usage">{{ system_stats.cpu_usage or 0 }}%</div>
+                            <div class="metric-label">CPU</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="memory-usage">{{ system_stats.memory_usage or 0 }}%</div>
+                            <div class="metric-label">Memory</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="disk-usage">{{ system_stats.disk_usage or 0 }}%</div>
+                            <div class="metric-label">Disk</div>
+                        </div>
+                    </div>
+                    <div class="data-list" id="processes-list">
+                        <div class="data-item">
+                            <div class="item-info">
+                                <div class="item-title">AI Models</div>
+                                <div class="item-details">{{ ai_models_count or 0 }} models loaded</div>
+                            </div>
+                            <div class="item-status status-active">Running</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="item-info">
+                                <div class="item-title">Web Server</div>
+                                <div class="item-details">Flask application</div>
+                            </div>
+                            <div class="item-status status-active">Running</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="item-info">
+                                <div class="item-title">Database</div>
+                                <div class="item-details">SQLite connection</div>
+                            </div>
+                            <div class="item-status status-active">Connected</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Model Status -->
+                <div class="monitoring-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-brain"></i>
+                            AI Models Status
+                        </div>
+                        <button class="refresh-btn" onclick="refreshAIModels()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="data-list" id="ai-models-list">
+                        {% if ai_models %}
+                            {% for model_name, model_info in ai_models.items() %}
+                            <div class="data-item">
+                                <div class="item-info">
+                                    <div class="item-title">{{ model_name.upper() }}</div>
+                                    <div class="item-details">{{ model_info.description or 'AI Model' }}</div>
+                                </div>
+                                <div class="item-status {% if model_info.status == 'ready' %}status-active{% elif model_info.status == 'loading' %}status-warning{% else %}status-danger{% endif %}">
+                                    {{ model_info.status.upper() }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="data-item">
+                                <div class="item-info">
+                                    <div class="item-title">Loading AI models...</div>
+                                    <div class="item-details">System initializing</div>
+                                </div>
+                                <div class="item-status status-warning">Loading</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="metrics-row">
+                        <div class="metric-item">
+                            <div class="metric-value" id="models-active">{{ active_models_count or 0 }}</div>
+                            <div class="metric-label">Active</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="predictions-made">{{ predictions_today or 0 }}</div>
+                            <div class="metric-label">Predictions</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Alerts -->
+                <div class="monitoring-card full-width-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Live Security Alerts
+                        </div>
+                        <button class="refresh-btn" onclick="refreshAlerts()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="data-list" id="alerts-list">
+                        {% if security_alerts %}
+                            {% for alert in security_alerts %}
+                            <div class="alert-item">
+                                <div class="alert-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title">{{ alert.title }}</div>
+                                    <div class="alert-time">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert-item" style="border-color: rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.1);">
+                                <div class="alert-icon" style="color: #00ff88;">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title" style="color: #00ff88;">System Secure</div>
+                                    <div class="alert-time">No security alerts detected</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh functions
+        function refreshActiveUsers() {
+            fetch('/admin/live/active-users')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateActiveUsersList(data.users);
+                        document.getElementById('users-online').textContent = data.online_count;
+                        document.getElementById('users-total').textContent = data.total_users;
+                    }
+                })
+                .catch(error => console.error('Error refreshing active users:', error));
+        }
+
+        function refreshScans() {
+            fetch('/admin/live/recent-scans')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateScansList(data.scans);
+                        document.getElementById('scans-today').textContent = data.scans_today;
+                        document.getElementById('scans-hour').textContent = data.scans_hour;
+                    }
+                })
+                .catch(error => console.error('Error refreshing scans:', error));
+        }
+
+        function refreshSystemResources() {
+            fetch('/admin/live/system-resources')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('cpu-usage').textContent = data.stats.cpu_usage + '%';
+                        document.getElementById('memory-usage').textContent = data.stats.memory_usage + '%';
+                        document.getElementById('disk-usage').textContent = data.stats.disk_usage + '%';
+                    }
+                })
+                .catch(error => console.error('Error refreshing system resources:', error));
+        }
+
+        function refreshAIModels() {
+            fetch('/api/model/health')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.models) {
+                        updateAIModelsList(data.models);
+                        const activeCount = Object.keys(data.models).filter(key => data.models[key].status === 'ready').length;
+                        document.getElementById('models-active').textContent = activeCount;
+                    }
+                })
+                .catch(error => console.error('Error refreshing AI models:', error));
+        }
+
+        function refreshAlerts() {
+            fetch('/admin/live/security-alerts')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateAlertsList(data.alerts);
+                    }
+                })
+                .catch(error => console.error('Error refreshing alerts:', error));
+        }
+
+        // Update UI functions
+        function updateActiveUsersList(users) {
+            const container = document.getElementById('active-users-list');
+            container.innerHTML = '';
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="data-item">
+                        <div class="item-info">
+                            <div class="item-title">No active users</div>
+                            <div class="item-details">Monitoring system active</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            users.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'data-item';
+                userElement.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-title">${user.username}</div>
+                        <div class="item-details">${user.email} • ${user.last_activity}</div>
+                    </div>
+                    <div class="item-status status-active">Online</div>
+                `;
+                container.appendChild(userElement);
+            });
+        }
+
+        function updateScansList(scans) {
+            const container = document.getElementById('scans-list');
+            container.innerHTML = '';
+            
+            if (scans.length === 0) {
+                container.innerHTML = `
+                    <div class="data-item">
+                        <div class="item-info">
+                            <div class="item-title">No recent scans</div>
+                            <div class="item-details">Scan system ready</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            scans.forEach(scan => {
+                const statusClass = scan.threat_level === 'HIGH' ? 'status-danger' : 
+                                   scan.threat_level === 'MEDIUM' ? 'status-warning' : 'status-active';
+                
+                const scanElement = document.createElement('div');
+                scanElement.className = 'data-item';
+                scanElement.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-title">${scan.network_name || 'Unknown Network'}</div>
+                        <div class="item-details">${scan.scan_type} • ${new Date(scan.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                    <div class="item-status ${statusClass}">
+                        ${scan.threat_level || 'SAFE'}
+                    </div>
+                `;
+                container.appendChild(scanElement);
+            });
+        }
+
+        function updateAIModelsList(models) {
+            const container = document.getElementById('ai-models-list');
+            container.innerHTML = '';
+            
+            Object.entries(models).forEach(([modelName, modelInfo]) => {
+                const statusClass = modelInfo.status === 'ready' ? 'status-active' :
+                                   modelInfo.status === 'loading' ? 'status-warning' : 'status-danger';
+                
+                const modelElement = document.createElement('div');
+                modelElement.className = 'data-item';
+                modelElement.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-title">${modelName.toUpperCase()}</div>
+                        <div class="item-details">${modelInfo.description || 'AI Model'}</div>
+                    </div>
+                    <div class="item-status ${statusClass}">
+                        ${modelInfo.status.toUpperCase()}
+                    </div>
+                `;
+                container.appendChild(modelElement);
+            });
+        }
+
+        function updateAlertsList(alerts) {
+            const container = document.getElementById('alerts-list');
+            container.innerHTML = '';
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-item" style="border-color: rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.1);">
+                        <div class="alert-icon" style="color: #00ff88;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title" style="color: #00ff88;">System Secure</div>
+                            <div class="alert-time">No security alerts detected</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.className = 'alert-item';
+                alertElement.innerHTML = `
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">${alert.title}</div>
+                        <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
+                    </div>
+                `;
+                container.appendChild(alertElement);
+            });
+        }
+
+        // Auto-refresh all data every 5 seconds
+        function refreshAllData() {
+            refreshActiveUsers();
+            refreshScans();
+            refreshSystemResources();
+            refreshAIModels();
+            refreshAlerts();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAllData();
+            
+            // Auto-refresh every 5 seconds
+            setInterval(refreshAllData, 5000);
+        });
+
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: rgba(100, 255, 218, 0.2);
+                border: 1px solid rgba(100, 255, 218, 0.3);
+                color: #64ffda;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                display: none;
+            `;
+            
+            if (window.innerWidth <= 768) {
+                toggleBtn.style.display = 'block';
+                document.body.appendChild(toggleBtn);
+                
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

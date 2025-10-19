@@ -1,0 +1,34 @@
+{
+  "test_date": "2025-08-20T00:05:30.262825",
+  "sample_network_data": {
+    "ssid": "TestNetwork",
+    "bssid": "AA:BB:CC:DD:EE:FF",
+    "signal_strength": -65,
+    "channel": 6,
+    "encryption": "WPA2",
+    "cipher_suite": "AES",
+    "auth_method": "PSK",
+    "timestamp": "2025-08-20T00:05:19.718606"
+  },
+  "test_networks": [
+    {
+      "ssid": "SecureNetwork",
+      "encryption": "WPA3",
+      "signal_strength": -45,
+      "channel": 6
+    },
+    {
+      "ssid": "OpenNetwork",
+      "encryption": "NONE",
+      "signal_strength": -70,
+      "channel": 1
+    },
+    {
+      "ssid": "WeakNetwork",
+      "encryption": "WEP",
+      "signal_strength": -80,
+      "channel": 11
+    }
+  ],
+  "status": "completed"
+}

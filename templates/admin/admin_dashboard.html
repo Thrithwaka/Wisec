@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #ccd6f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            color: #64ffda;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            color: #8892b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #8892b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(83, 62, 232, 0.2);
+            color: #533ee8;
+            border-left: 3px solid #533ee8;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #64ffda;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #64ffda, #533ee8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .card-icon i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .card-title {
+            color: #ccd6f6;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #64ffda;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            color: #8892b0;
+            font-size: 0.9rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .quick-actions h3 {
+            color: #ccd6f6;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #533ee8, #64ffda);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(83, 62, 232, 0.3);
+        }
+
+        .action-btn i {
+            margin-right: 8px;
+        }
+
+        /* Recent Activity */
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .recent-activity h3 {
+            color: #ccd6f6;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(100, 255, 218, 0.05);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #64ffda, #533ee8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: #ccd6f6;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            color: #8892b0;
+            font-size: 0.85rem;
+        }
+
+        /* System Health */
+        .health-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .health-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .health-dot.excellent { background: #64ffda; }
+        .health-dot.good { background: #00ff88; }
+        .health-dot.fair { background: #ffaa00; }
+        .health-dot.poor { background: #ff4757; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>WISEC</h1>
+                <span>Admin Panel</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.admin_dashboard_simple') }}" class="nav-link active">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analytics_simple') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.live_monitoring_simple') }}" class="nav-link">
+                        <i class="fas fa-eye"></i>
+                        Live Monitoring
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.security_simple') }}" class="nav-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Security Incidents
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.users_simple') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.approvals_simple') }}" class="nav-link">
+                        <i class="fas fa-user-check"></i>
+                        Approval Requests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.system_simple') }}" class="nav-link">
+                        <i class="fas fa-server"></i>
+                        System Monitor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analytics_simple') }}" class="nav-link">
+                        <i class="fas fa-brain"></i>
+                        AI Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        Back to Main
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header animate__animated animate__fadeInDown">
+                <h1><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
+                <p>System administration and monitoring center</p>
+            </header>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card animate__animated animate__fadeInUp">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-title">Total Users</div>
+                    </div>
+                    <div class="card-value" id="total-users">Loading...</div>
+                    <div class="card-description">Registered system users</div>
+                </div>
+
+                <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="card-title">Pending Approvals</div>
+                    </div>
+                    <div class="card-value" id="pending-approvals">Loading...</div>
+                    <div class="card-description">Admin access requests</div>
+                </div>
+
+                <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-wifi"></i>
+                        </div>
+                        <div class="card-title">Active Scans</div>
+                    </div>
+                    <div class="card-value" id="active-scans">Loading...</div>
+                    <div class="card-description">Scans performed today</div>
+                </div>
+
+                <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="card-title">Security Alerts</div>
+                    </div>
+                    <div class="card-value" id="security-alerts">Loading...</div>
+                    <div class="card-description">Alerts in last 24h</div>
+                </div>
+
+                <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="card-title">System Health</div>
+                    </div>
+                    <div class="card-value" id="system-health-status">Loading...</div>
+                    <div class="card-description">
+                        Overall system status
+                        <div class="health-indicator">
+                            <div class="health-dot" id="health-indicator"></div>
+                            Score: <span id="health-score">--</span>%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="card-title">AI Models</div>
+                    </div>
+                    <div class="card-value" id="ai-models-count">Loading...</div>
+                    <div class="card-description">Active AI models running</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+                <h3><i class="fas fa-bolt"></i> Administration</h3>
+                <div class="action-buttons">
+                    <a href="/admin/analytics" class="action-btn">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics Dashboard
+                    </a>
+                    <a href="/admin/live-monitoring" class="action-btn">
+                        <i class="fas fa-eye"></i>
+                        Live Monitoring
+                    </a>
+                    <a href="/admin/security-incidents" class="action-btn">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Security Incidents
+                    </a>
+                    <a href="/admin/users" class="action-btn">
+                        <i class="fas fa-users"></i>
+                        User Management
+                    </a>
+                    <a href="/admin/system-monitor" class="action-btn">
+                        <i class="fas fa-server"></i>
+                        System Monitor
+                    </a>
+                    <button class="action-btn" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-activity animate__animated animate__fadeInUp" style="animation-delay: 0.7s;">
+                <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                <div class="activity-list" id="activity-list">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ activity.event_type }}</div>
+                                <div class="activity-time">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-info"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">No recent activity</div>
+                                <div class="activity-time">System monitoring active</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load real dashboard data
+        function loadDashboardData() {
+            // Fetch system health
+            fetch('/admin/system-health')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemHealth(data.health_data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching system health:', error);
+                    document.getElementById('system-health-status').textContent = 'Error';
+                });
+
+            // Fetch user counts
+            fetch('/admin/users/count')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-users').textContent = data.total || 0;
+                    document.getElementById('pending-approvals').textContent = data.pending_approvals || 0;
+                })
+                .catch(error => {
+                    console.error('Error fetching user counts:', error);
+                    document.getElementById('total-users').textContent = 'Error';
+                    document.getElementById('pending-approvals').textContent = 'Error';
+                });
+
+            // Fetch scan statistics
+            fetch('/api/scans/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('active-scans').textContent = data.scans_today || 0;
+                    document.getElementById('security-alerts').textContent = data.alerts_today || 0;
+                })
+                .catch(error => {
+                    console.error('Error fetching scan stats:', error);
+                    document.getElementById('active-scans').textContent = 'Error';
+                    document.getElementById('security-alerts').textContent = 'Error';
+                });
+
+            // Fetch AI model status
+            fetch('/api/model/health')
+                .then(response => response.json())
+                .then(data => {
+                    const activeModels = data.models ? Object.keys(data.models).filter(key => data.models[key].status === 'ready').length : 0;
+                    document.getElementById('ai-models-count').textContent = activeModels;
+                })
+                .catch(error => {
+                    console.error('Error fetching model status:', error);
+                    document.getElementById('ai-models-count').textContent = 'Error';
+                });
+        }
+
+        function updateSystemHealth(healthData) {
+            if (healthData.status) {
+                document.getElementById('system-health-status').textContent = healthData.status;
+                
+                const healthIndicator = document.getElementById('health-indicator');
+                healthIndicator.className = 'health-dot ' + healthData.status.toLowerCase();
+                
+                if (healthData.score !== undefined) {
+                    document.getElementById('health-score').textContent = Math.round(healthData.score);
+                }
+            }
+        }
+
+        function refreshDashboard() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            
+            loadDashboardData();
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        }
+
+        function exportReport() {
+            window.location.href = '/admin/export-audit-logs';
+        }
+
+        // Load data on page load and auto-refresh every 30 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+        
+        setInterval(loadDashboardData, 30000);
+
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: rgba(100, 255, 218, 0.2);
+                border: 1px solid rgba(100, 255, 218, 0.3);
+                color: #64ffda;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                display: none;
+            `;
+            
+            if (window.innerWidth <= 768) {
+                toggleBtn.style.display = 'block';
+                document.body.appendChild(toggleBtn);
+                
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

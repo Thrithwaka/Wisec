@@ -1,0 +1,272 @@
+{% extends "admin/admin_base_new.html" %}
+
+{% block title %}Feature Approval Requests - Admin Panel{% endblock %}
+{% block breadcrumb %}Approval Requests{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-clipboard-check"></i> Feature Approval Requests
+    </h1>
+    <p class="page-description">Review and manage user requests for advanced features access</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.pending }}</div>
+        <div class="stat-label">Pending Review</div>
+        <div class="stat-change positive">Requires Action</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.under_review }}</div>
+        <div class="stat-label">Under Review</div>
+        <div class="stat-change">In Progress</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.approved }}</div>
+        <div class="stat-label">Approved</div>
+        <div class="stat-change positive">+{{ ((stats.approved / stats.total * 100) | round(1)) if stats.total > 0 else 0 }}%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.rejected }}</div>
+        <div class="stat-label">Rejected</div>
+        <div class="stat-change negative">{{ ((stats.rejected / stats.total * 100) | round(1)) if stats.total > 0 else 0 }}%</div>
+    </div>
+</div>
+
+<!-- Filters and Actions -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title">Filter Requests</h3>
+    </div>
+    
+    <form method="GET" class="filter-form" style="display: flex; gap: 15px; align-items: end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <label style="display: block; margin-bottom: 5px; color: #8892b0; font-size: 12px; text-transform: uppercase;">Status</label>
+            <select name="status" style="width: 100%; padding: 10px; border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; background: rgba(255, 255, 255, 0.05); color: #ccd6f6;">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="under_review" {% if status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
+                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        
+        <div style="flex: 1; min-width: 200px;">
+            <label style="display: block; margin-bottom: 5px; color: #8892b0; font-size: 12px; text-transform: uppercase;">Priority</label>
+            <select name="priority" style="width: 100%; padding: 10px; border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; background: rgba(255, 255, 255, 0.05); color: #ccd6f6;">
+                <option value="all" {% if priority_filter == 'all' %}selected{% endif %}>All Priorities</option>
+                <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        
+        <a href="{{ url_for('admin.approval_requests') }}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Clear
+        </a>
+    </form>
+</div>
+
+<!-- Requests List -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title">Approval Requests ({{ requests.total }} total)</h3>
+        <div>
+            {% if requests.has_prev %}
+                <a href="{{ url_for('admin.approval_requests', page=requests.prev_num, status=status_filter, priority=priority_filter) }}" class="btn btn-secondary">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            {% if requests.has_next %}
+                <a href="{{ url_for('admin.approval_requests', page=requests.next_num, status=status_filter, priority=priority_filter) }}" class="btn btn-secondary">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if requests.items %}
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Request Type</th>
+                        <th>Priority</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Days Pending</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests.items %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; flex-direction: column;">
+                                <strong>{{ request.user.email.split('@')[0] if request.user and request.user.email else 'Unknown' }}</strong>
+                                <small style="color: #8892b0;">{{ request.user.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-active">{{ request.request_type.value.replace('_', ' ').title() }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge {% if request.priority.value == 'urgent' %}status-rejected{% elif request.priority.value == 'high' %}status-pending{% else %}status-active{% endif %}">
+                                {{ request.priority.value.upper() }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                                {{ request.purpose[:100] }}{% if request.purpose|length > 100 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge {% if request.status.value == 'pending' %}status-pending{% elif request.status.value == 'approved' %}status-active{% elif request.status.value == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
+                                {{ request.status.value.replace('_', ' ').title() }}
+                            </span>
+                        </td>
+                        <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span {% if request.days_pending > 7 %}style="color: #f87171;"{% elif request.days_pending > 3 %}style="color: #fbbf24;"{% endif %}>
+                                {{ request.days_pending }} days
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <a href="{{ url_for('admin.view_approval_request', request_id=request.id) }}" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if request.status.value == 'pending' %}
+                                    <button onclick="quickApprove({{ request.id }})" class="btn btn-success" style="font-size: 12px; padding: 6px 12px;">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if requests.pages > 1 %}
+        <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+            {% if requests.has_prev %}
+                <a href="{{ url_for('admin.approval_requests', page=1, status=status_filter, priority=priority_filter) }}" class="btn btn-secondary">First</a>
+                <a href="{{ url_for('admin.approval_requests', page=requests.prev_num, status=status_filter, priority=priority_filter) }}" class="btn btn-secondary">Previous</a>
+            {% endif %}
+            
+            <span style="color: #8892b0;">Page {{ requests.page }} of {{ requests.pages }}</span>
+            
+            {% if requests.has_next %}
+                <a href="{{ url_for('admin.approval_requests', page=requests.next_num, status=status_filter, priority=priority_filter) }}" class="btn btn-secondary">Next</a>
+                <a href="{{ url_for('admin.approval_requests', page=requests.pages, status=status_filter, priority=priority_filter) }}" class="btn btn-secondary">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #8892b0;">
+            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+            <h3>No Requests Found</h3>
+            <p>No approval requests match the current filters.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Quick Approve Modal -->
+<div id="quickApproveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; justify-content: center; align-items: center;">
+    <div style="background: rgba(15, 20, 25, 0.95); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; backdrop-filter: blur(20px);">
+        <h3 style="color: #64ffda; margin-bottom: 20px;">Quick Approve Request</h3>
+        <form id="quickApproveForm" method="post">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #8892b0;">Notes (optional)</label>
+                <textarea name="notes" rows="3" placeholder="Add approval notes..." style="width: 100%; padding: 10px; border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; background: rgba(255, 255, 255, 0.05); color: #ccd6f6; resize: vertical;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="closeQuickApprove()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-success">Approve Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.filter-form select, .filter-form input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(100, 255, 218, 0.3) !important;
+    color: #ccd6f6 !important;
+}
+
+.filter-form select:focus, .filter-form input:focus {
+    border-color: rgba(100, 255, 218, 0.6) !important;
+    outline: none;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(100, 255, 218, 0.05) !important;
+}
+
+@media (max-width: 768px) {
+    .filter-form {
+        flex-direction: column !important;
+    }
+    
+    .filter-form > div {
+        min-width: 100% !important;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+</style>
+
+<script>
+let currentRequestId = null;
+
+function quickApprove(requestId) {
+    currentRequestId = requestId;
+    document.getElementById('quickApproveForm').action = `/admin/approval-request/${requestId}/approve`;
+    document.getElementById('quickApproveModal').style.display = 'flex';
+}
+
+function closeQuickApprove() {
+    document.getElementById('quickApproveModal').style.display = 'none';
+    currentRequestId = null;
+}
+
+// Close modal when clicking outside
+document.getElementById('quickApproveModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeQuickApprove();
+    }
+});
+
+// Auto refresh notification count
+setInterval(function() {
+    fetch('/admin/api/notification-counts')
+        .then(response => response.json())
+        .then(data => {
+            if (data.pending_requests !== undefined) {
+                const badge = document.getElementById('pending-requests');
+                if (badge) {
+                    badge.textContent = data.pending_requests;
+                    badge.style.display = data.pending_requests > 0 ? 'inline-block' : 'none';
+                }
+            }
+        })
+        .catch(error => console.error('Error updating notification count:', error));
+}, 30000);
+</script>
+{% endblock %}

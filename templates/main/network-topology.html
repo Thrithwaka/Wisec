@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Network Topology</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Use native HTML5 Canvas for visualization - no external dependencies -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 35%, #2c1810 100%);
+            color: #e8e8e8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Dashboard Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            color: #64ffda;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            color: #8892b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #8892b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(83, 62, 232, 0.2);
+            color: #533ee8;
+            border-left: 3px solid #533ee8;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-section {
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+
+        .nav-section-title {
+            color: #64ffda;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .admin-only {
+            opacity: 0.7;
+        }
+
+        .admin-only:hover {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .header h2 {
+            color: #ccd6f6;
+            font-size: 32px;
+            font-weight: 300;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(30, 40, 50, 0.3);
+            gap: 8px;
+        }
+
+        /* Control Panel Styles */
+        .control-panel {
+            background: rgba(30, 40, 50, 0.3);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        /* Primary Controls */
+        .primary-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .scan-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .control-select {
+            padding: 10px 15px;
+            background: rgba(15, 20, 25, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            border-radius: 6px;
+            color: #e8e8e8;
+            font-size: 14px;
+            min-width: 140px;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: #64ffda;
+            box-shadow: 0 0 5px rgba(100, 255, 218, 0.3);
+        }
+
+        .scan-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8892b0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-option:hover {
+            color: #64ffda;
+        }
+
+        .toggle-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #64ffda;
+        }
+
+        .action-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-large {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-large i {
+            margin-right: 8px;
+        }
+
+        .secondary-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .filter-toggle {
+            width: 100%;
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #8892b0;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-toggle:hover {
+            background: rgba(100, 255, 218, 0.05);
+            color: #64ffda;
+        }
+
+        .toggle-icon {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .filter-toggle.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .filter-content.active {
+            max-height: 100px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            align-items: center;
+        }
+
+        .filter-select, .filter-input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(15, 20, 25, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            border-radius: 4px;
+            color: #e8e8e8;
+            font-size: 13px;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #64ffda;
+            box-shadow: 0 0 3px rgba(100, 255, 218, 0.3);
+        }
+
+        .filter-input::placeholder {
+            color: #6c7b7f;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #533ee8 0%, #64ffda 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(83, 62, 232, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .performance-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(30, 40, 50, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-card h4 {
+            color: #8892b0;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .stat-value {
+            color: #64ffda;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Info Row Styles */
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .network-status, .device-legend, .navigation-help {
+            background: rgba(30, 40, 50, 0.3);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .network-status h3, .device-legend h3, .navigation-help h3 {
+            color: #64ffda;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-grid, .legend-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-label {
+            color: #8892b0;
+            font-size: 12px;
+        }
+
+        .status-value {
+            color: #64ffda;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #8892b0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-color.router { background: #ff6b6b; }
+        .legend-color.desktop { background: #4ecdc4; }
+        .legend-color.laptop { background: #45b7d1; }
+        .legend-color.mobile { background: #96ceb4; }
+        .legend-color.iot { background: #feca57; }
+        .legend-color.printer { background: #a55eea; }
+        .legend-color.unknown { background: #6c7b7f; }
+
+        .help-text {
+            color: #8892b0;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .help-text strong {
+            color: #64ffda;
+        }
+
+        @media (max-width: 768px) {
+            .info-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        /* Topology Visualization Container */
+        .topology-visualization {
+            background: rgba(15, 20, 25, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 8px;
+            height: calc(100vh - 450px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #topology-network {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #topology-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        #topology-canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Loading States */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 20, 25, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(100, 255, 218, 0.1);
+            border-top: 3px solid #64ffda;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #64ffda;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            color: #8892b0;
+            font-size: 14px;
+        }
+
+        /* Device Details Panel */
+        .device-details {
+            position: fixed;
+            top: 50%;
+            right: -400px;
+            transform: translateY(-50%);
+            width: 380px;
+            max-height: 80vh;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .device-details.active {
+            right: 20px;
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .device-header h3 {
+            color: #64ffda;
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: #8892b0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #64ffda;
+        }
+
+        .device-info-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .info-item {
+            background: rgba(30, 40, 50, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .info-item label {
+            display: block;
+            color: #8892b0;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item .value {
+            color: #e8e8e8;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Legend */
+        .legend {
+            background: rgba(30, 40, 50, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .legend h4 {
+            color: #64ffda;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-color.router { background: #ff6b6b; }
+        .legend-color.desktop { background: #4ecdc4; }
+        .legend-color.laptop { background: #45b7d1; }
+        .legend-color.mobile { background: #96ceb4; }
+        .legend-color.iot { background: #feca57; }
+        .legend-color.printer { background: #a55eea; }
+        .legend-color.unknown { background: #6c7b7f; }
+
+        .legend-label {
+            color: #8892b0;
+            font-size: 12px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #533ee8 0%, #64ffda 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            color: #8892b0;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1001;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .primary-controls {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+            
+            .scan-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .scan-options {
+                justify-content: space-between;
+            }
+            
+            .action-controls {
+                justify-content: center;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .device-details {
+                width: calc(100vw - 40px);
+                right: -100vw;
+            }
+            
+            .device-details.active {
+                right: 20px;
+            }
+        }
+        
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1002;
+            background: rgba(83, 62, 232, 0.9);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+
+        /* Custom Network Styles */
+        .vis-network {
+            outline: none;
+        }
+        
+        .vis-tooltip {
+            background: rgba(15, 20, 25, 0.95) !important;
+            color: #e8e8e8 !important;
+            border: 1px solid rgba(100, 255, 218, 0.2) !important;
+            border-radius: 6px !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            font-size: 12px !important;
+            padding: 10px !important;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: rgba(72, 187, 120, 0.1);
+            border-color: rgba(72, 187, 120, 0.3);
+            color: #68d391;
+        }
+
+        .alert-warning {
+            background: rgba(236, 201, 75, 0.1);
+            border-color: rgba(236, 201, 75, 0.3);
+            color: #f6e05e;
+        }
+
+        .alert-error {
+            background: rgba(245, 101, 101, 0.1);
+            border-color: rgba(245, 101, 101, 0.3);
+            color: #f56565;
+        }
+
+        .alert-info {
+            background: rgba(66, 153, 225, 0.1);
+            border-color: rgba(66, 153, 225, 0.3);
+            color: #63b3ed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="dashboard-container">
+        <!-- Dashboard Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1>WISEC</h1>
+                <span>Security Dashboard</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/current-wifi" class="nav-link">
+                        <i class="fas fa-wifi"></i>
+                        Current WiFi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/deep-scan" class="nav-link">
+                        <i class="fas fa-search"></i>
+                        Deep Scan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/scan-history" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        Scan History
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/network-topology" class="nav-link active">
+                        <i class="fas fa-project-diagram"></i>
+                        Network Topology
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Advanced Features Section - Merged with Passive Monitoring -->
+            <div class="nav-section">
+                <div class="nav-section-title">Advanced Features</div>
+                <ul class="nav-menu">
+                    <!-- Passive Monitoring Features -->
+                    <li class="nav-item">
+                        <a href="/passive-monitor" class="nav-link">
+                            <i class="fas fa-eye"></i>
+                            Monitor Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/passive-monitor/traffic-capture" class="nav-link">
+                            <i class="fas fa-network-wired"></i>
+                            Traffic Capture
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/passive-monitor/beacon-analysis" class="nav-link">
+                            <i class="fas fa-broadcast-tower"></i>
+                            Beacon Analysis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/passive-monitor/rogue-detector" class="nav-link">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Rogue AP Detection
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                    <li class="nav-item">
+                        <a href="/passive-monitor/handshake-capture" class="nav-link admin-only">
+                            <i class="fas fa-handshake"></i>
+                            Handshake Capture
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="/passive-monitor/deauth-monitor" class="nav-link">
+                            <i class="fas fa-ban"></i>
+                            Deauth Monitor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/passive-monitor/security-audit" class="nav-link">
+                            <i class="fas fa-clipboard-check"></i>
+                            Security Audit
+                        </a>
+                    </li>
+                    
+                    <!-- Advanced Scanner Features -->
+                    <li class="nav-item">
+                        <a href="/wifi/advanced-scanner" class="nav-link">
+                            <i class="fas fa-satellite-dish"></i>
+                            Advanced Scanner
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/ai/model-selector" class="nav-link">
+                            <i class="fas fa-brain"></i>
+                            AI Models
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/passive-monitor/channel-analysis" class="nav-link">
+                            <i class="fas fa-chart-line"></i>
+                            Channel Analysis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/wifi/signal-monitor" class="nav-link">
+                            <i class="fas fa-signal"></i>
+                            Signal Monitor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/vulnerability/deep-analysis" class="nav-link">
+                            <i class="fas fa-shield-alt"></i>
+                            Deep Analysis
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Admin Panel Section - Only visible to actual admin role users -->
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <div class="nav-section">
+                <div class="nav-section-title">Administration</div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link admin-only">
+                            <i class="fas fa-cog"></i>
+                            Admin Panel
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/users" class="nav-link admin-only">
+                            <i class="fas fa-users"></i>
+                            User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/system-monitor" class="nav-link admin-only">
+                            <i class="fas fa-server"></i>
+                            System Monitor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/model-performance" class="nav-link admin-only">
+                            <i class="fas fa-robot"></i>
+                            Model Performance
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h2>Network Topology</h2>
+                <div class="user-info">
+                    {% if current_user.is_authenticated %}
+                        <span>{{ current_user.email }}</span>
+                        <div class="status-indicator">
+                            {% if current_user.is_admin() %}
+                                <i class="fas fa-user-shield" style="color: #2ea043;"></i>
+                                <span style="color: #2ea043;">Administrator</span>
+                            {% elif current_user.is_moderator() %}
+                                <i class="fas fa-user-tie" style="color: #64ffda;"></i>
+                                <span style="color: #64ffda;">Moderator</span>
+                            {% else %}
+                                <i class="fas fa-user" style="color: #8892b0;"></i>
+                                <span style="color: #8892b0;">User</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Topology Control Panel -->
+            <div class="control-panel">
+                <!-- Primary Controls Row -->
+                <div class="primary-controls">
+                    <div class="scan-controls">
+                        <select id="scanDepth" class="control-select">
+                            <option value="fast">Fast Scan (30s)</option>
+                            <option value="medium">Medium Scan (2m)</option>
+                            <option value="deep">Deep Scan (5m)</option>
+                        </select>
+                        
+                        <div class="scan-options">
+                            <label class="toggle-option">
+                                <input type="checkbox" id="includePorts">
+                                <span class="toggle-text">Port Scan</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="checkbox" id="includeOS">
+                                <span class="toggle-text">OS Detection</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="checkbox" id="autoRefresh">
+                                <span class="toggle-text">Auto-Refresh</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-controls">
+                        <button id="startScan" class="btn btn-primary btn-large">
+                            <i class="fas fa-play"></i>
+                            <span>Start Discovery</span>
+                        </button>
+                        
+                        <div class="secondary-actions">
+                            <button id="refreshTopology" class="btn btn-icon" title="Refresh">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                            <button id="exportTopology" class="btn btn-icon" title="Export">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button id="fullscreenToggle" class="btn btn-icon" title="Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Controls Row (Collapsible) -->
+                <div class="filter-controls">
+                    <button class="filter-toggle" id="filterToggle">
+                        <i class="fas fa-filter"></i>
+                        <span>Filters</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </button>
+                    
+                    <div class="filter-content" id="filterContent">
+                        <div class="filter-row">
+                            <select id="deviceTypeFilter" class="filter-select">
+                                <option value="all">All Device Types</option>
+                                <option value="router">Routers</option>
+                                <option value="desktop">Desktops</option>
+                                <option value="laptop">Laptops</option>
+                                <option value="mobile">Mobile Devices</option>
+                                <option value="iot">IoT Devices</option>
+                                <option value="printer">Printers</option>
+                                <option value="unknown">Unknown</option>
+                            </select>
+                            
+                            <select id="vendorFilter" class="filter-select">
+                                <option value="all">All Vendors</option>
+                            </select>
+                            
+                            <input type="text" id="ipFilter" class="filter-input" placeholder="IP Filter (e.g., 192.168.1.0/24)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Stats -->
+            <div class="performance-stats">
+                <div class="stat-card">
+                    <h4>Total Devices</h4>
+                    <div class="stat-value" id="totalDevices">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Active Connections</h4>
+                    <div class="stat-value" id="activeConnections">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Network Segments</h4>
+                    <div class="stat-value" id="networkSegments">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Discovery Speed</h4>
+                    <div class="stat-value" id="discoverySpeed">0</div>
+                </div>
+            </div>
+            
+            <!-- Network Status & Legend Row -->
+            <div class="info-row">
+                <div class="network-status">
+                    <h3>Network Status</h3>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">Current Network:</span>
+                            <span class="status-value" id="currentNetwork">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Router IP:</span>
+                            <span class="status-value" id="routerIP">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Connected Devices:</span>
+                            <span class="status-value" id="deviceCount">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Discovery Time:</span>
+                            <span class="status-value" id="discoveryTime">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="device-legend">
+                    <h3>Device Legend</h3>
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <div class="legend-color router"></div>
+                            <span>WiFi Router</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color desktop"></div>
+                            <span>Desktop</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color laptop"></div>
+                            <span>Laptop</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color mobile"></div>
+                            <span>Mobile</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color iot"></div>
+                            <span>IoT Device</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color printer"></div>
+                            <span>Printer</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="navigation-help">
+                    <h3>Navigation</h3>
+                    <div class="help-text">
+                        <strong>Mouse:</strong> Drag to pan • Wheel to zoom • Click nodes for details<br>
+                        <strong>Keyboard:</strong> WASD/Arrow keys to pan • +/- to zoom • R to center • 0 to reset
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alerts Container -->
+            <div id="alertsContainer"></div>
+            
+            <!-- Progress Container -->
+            <div class="progress-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Initializing network discovery...</div>
+            </div>
+            
+            <!-- Topology Visualization -->
+            <div class="topology-visualization">
+                <canvas id="topology-canvas"></canvas>
+                
+                <!-- Loading Overlay -->
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Discovering Network Topology</div>
+                    <div class="loading-subtext">Scanning for connected devices...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Device Details Panel -->
+    <div class="device-details" id="deviceDetails">
+        <div class="device-header">
+            <h3 id="deviceTitle">Device Details</h3>
+            <button class="close-btn" id="closeDetails">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="device-info-grid" id="deviceInfo">
+            <!-- Device information will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        class NetworkTopologyManager {
+            constructor() {
+                this.canvas = null;
+                this.ctx = null;
+                this.nodes = [];
+                this.edges = [];
+                this.isScanning = false;
+                this.autoRefreshInterval = null;
+                this.currentData = null;
+                this.selectedDevice = null;
+                this.animationFrame = null;
+                
+                // Canvas interaction
+                this.isDragging = false;
+                this.isPanning = false;
+                this.dragNode = null;
+                this.dragOffset = null;
+                this.mousePos = { x: 0, y: 0 };
+                this.lastMousePos = { x: 0, y: 0 };
+                this.offset = { x: 0, y: 0 };
+                this.scale = 1;
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('Initializing native Canvas visualization...');
+                try {
+                    this.setupEventListeners();
+                    this.setupCanvasVisualization();
+                    this.showAlert('Ready to discover network topology! Use mouse to pan/zoom or WASD/Arrow keys to navigate. Press R to center view.', 'info');
+                    console.log('Topology manager initialized successfully');
+                } catch (error) {
+                    console.error('Error during topology manager initialization:', error);
+                    this.showAlert('Failed to initialize some components: ' + error.message, 'warning');
+                }
+            }
+            
+            setupEventListeners() {
+                // Scan controls
+                const startScan = document.getElementById('startScan');
+                if (startScan) startScan.addEventListener('click', () => this.startDiscovery());
+                
+                const refreshTopology = document.getElementById('refreshTopology');
+                if (refreshTopology) refreshTopology.addEventListener('click', () => this.refreshTopology());
+                
+                // Auto refresh toggle
+                const autoRefresh = document.getElementById('autoRefresh');
+                if (autoRefresh) {
+                    autoRefresh.addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            this.startAutoRefresh();
+                        } else {
+                            this.stopAutoRefresh();
+                        }
+                    });
+                }
+                
+                // Filter controls
+                const deviceTypeFilter = document.getElementById('deviceTypeFilter');
+                if (deviceTypeFilter) deviceTypeFilter.addEventListener('change', () => this.applyFilters());
+                
+                const vendorFilter = document.getElementById('vendorFilter');
+                if (vendorFilter) vendorFilter.addEventListener('change', () => this.applyFilters());
+                
+                const ipFilter = document.getElementById('ipFilter');
+                if (ipFilter) ipFilter.addEventListener('input', () => this.applyFilters());
+                
+                // Device details
+                const closeDetails = document.getElementById('closeDetails');
+                if (closeDetails) closeDetails.addEventListener('click', () => this.hideDeviceDetails());
+                
+                // Export
+                const exportTopology = document.getElementById('exportTopology');
+                if (exportTopology) exportTopology.addEventListener('click', () => this.exportTopology());
+                
+                // Fullscreen
+                const fullscreenToggle = document.getElementById('fullscreenToggle');
+                if (fullscreenToggle) {
+                    fullscreenToggle.addEventListener('click', () => this.toggleFullscreen());
+                }
+                
+                // Filter toggle
+                const filterToggle = document.getElementById('filterToggle');
+                if (filterToggle) {
+                    filterToggle.addEventListener('click', () => this.toggleFilters());
+                }
+                
+                // Mobile menu
+                const mobileToggle = document.getElementById('mobileMenuToggle');
+                if (mobileToggle) {
+                    mobileToggle.addEventListener('click', () => this.toggleMobileMenu());
+                }
+                
+                // Responsive design
+                window.addEventListener('resize', () => this.handleResize());
+            }
+            
+            setupCanvasVisualization() {
+                try {
+                    this.canvas = document.getElementById('topology-canvas');
+                    
+                    if (!this.canvas) {
+                        console.error('Canvas element not found');
+                        this.showAlert('Visualization canvas not found', 'error');
+                        return;
+                    }
+                    
+                    this.ctx = this.canvas.getContext('2d');
+                    
+                    // Set canvas size
+                    this.resizeCanvas();
+                    
+                    // Initialize data structures
+                    this.nodes = [];
+                    this.edges = [];
+                    
+                    // Set up canvas event listeners
+                    this.setupCanvasEvents();
+                    
+                    // Start animation loop
+                    this.startAnimationLoop();
+                    
+                    console.log('Canvas visualization initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Error setting up canvas visualization:', error);
+                    this.showAlert('Failed to initialize visualization: ' + error.message, 'error');
+                }
+            }
+            
+            resizeCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width * window.devicePixelRatio;
+                this.canvas.height = rect.height * window.devicePixelRatio;
+                this.canvas.style.width = rect.width + 'px';
+                this.canvas.style.height = rect.height + 'px';
+                this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+            
+            setupCanvasEvents() {
+                // Mouse events
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+                this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+                this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+                
+                // Touch events for mobile
+                this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+                this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+                this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                
+                // Context menu prevention
+                this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
+            
+            getMousePos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                
+                return {
+                    x: ((e.clientX - rect.left) * scaleX / window.devicePixelRatio - this.offset.x) / this.scale,
+                    y: ((e.clientY - rect.top) * scaleY / window.devicePixelRatio - this.offset.y) / this.scale
+                };
+            }
+            
+            findNodeAt(x, y) {
+                for (let node of this.nodes) {
+                    const dx = x - node.x;
+                    const dy = y - node.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < node.size) {
+                        return node;
+                    }
+                }
+                return null;
+            }
+            
+            handleMouseDown(e) {
+                const pos = this.getMousePos(e);
+                const node = this.findNodeAt(pos.x, pos.y);
+                
+                this.lastMousePos = { x: e.clientX, y: e.clientY };
+                
+                if (node) {
+                    this.isDragging = true;
+                    this.dragNode = node;
+                    this.dragOffset = {
+                        x: pos.x - node.x,
+                        y: pos.y - node.y
+                    };
+                    this.canvas.style.cursor = 'grabbing';
+                } else {
+                    this.isPanning = true;
+                    this.canvas.style.cursor = 'grabbing';
+                }
+            }
+            
+            handleMouseMove(e) {
+                if (this.isDragging && this.dragNode) {
+                    // Drag node
+                    const pos = this.getMousePos(e);
+                    this.dragNode.x = pos.x - this.dragOffset.x;
+                    this.dragNode.y = pos.y - this.dragOffset.y;
+                } else if (this.isPanning) {
+                    // Pan canvas
+                    const deltaX = e.clientX - this.lastMousePos.x;
+                    const deltaY = e.clientY - this.lastMousePos.y;
+                    
+                    this.offset.x += deltaX;
+                    this.offset.y += deltaY;
+                    
+                    this.lastMousePos = { x: e.clientX, y: e.clientY };
+                } else {
+                    // Check for hover
+                    const pos = this.getMousePos(e);
+                    const node = this.findNodeAt(pos.x, pos.y);
+                    this.canvas.style.cursor = node ? 'pointer' : 'grab';
+                }
+            }
+            
+            handleMouseUp(e) {
+                this.isDragging = false;
+                this.dragNode = null;
+                this.isPanning = false;
+                this.dragOffset = null;
+                this.canvas.style.cursor = 'grab';
+            }
+            
+            handleCanvasClick(e) {
+                const pos = this.getMousePos(e);
+                const node = this.findNodeAt(pos.x, pos.y);
+                
+                if (node && node.deviceData) {
+                    this.showDeviceDetails(node.deviceData, node.id);
+                }
+            }
+            
+            handleWheel(e) {
+                e.preventDefault();
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.max(0.1, Math.min(3, this.scale * delta));
+                
+                // Zoom towards mouse cursor
+                if (newScale !== this.scale) {
+                    const scaleDiff = newScale / this.scale;
+                    
+                    this.offset.x = mouseX - (mouseX - this.offset.x) * scaleDiff;
+                    this.offset.y = mouseY - (mouseY - this.offset.y) * scaleDiff;
+                    
+                    this.scale = newScale;
+                }
+            }
+            
+            handleTouchStart(e) {
+                e.preventDefault();
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    this.handleMouseDown(touch);
+                }
+            }
+            
+            handleTouchMove(e) {
+                e.preventDefault();
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    this.handleMouseMove(touch);
+                }
+            }
+            
+            handleTouchEnd(e) {
+                e.preventDefault();
+                this.handleMouseUp(e);
+            }
+            
+            handleKeyDown(e) {
+                // Only handle keys when canvas area is focused or no input is focused
+                if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+                    return;
+                }
+                
+                const panSpeed = 50;
+                const zoomSpeed = 0.1;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        e.preventDefault();
+                        this.offset.y += panSpeed;
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        this.offset.y -= panSpeed;
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        e.preventDefault();
+                        this.offset.x += panSpeed;
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        e.preventDefault();
+                        this.offset.x -= panSpeed;
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        this.scale = Math.min(3, this.scale * (1 + zoomSpeed));
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        this.scale = Math.max(0.1, this.scale * (1 - zoomSpeed));
+                        break;
+                    case 'r':
+                    case 'R':
+                        e.preventDefault();
+                        this.centerView();
+                        break;
+                    case '0':
+                        e.preventDefault();
+                        this.resetView();
+                        break;
+                }
+            }
+            
+            centerView() {
+                if (this.nodes.length === 0) return;
+                
+                // Calculate center of all nodes
+                let centerX = 0, centerY = 0;
+                for (let node of this.nodes) {
+                    centerX += node.x;
+                    centerY += node.y;
+                }
+                centerX /= this.nodes.length;
+                centerY /= this.nodes.length;
+                
+                // Center the view
+                const canvasWidth = this.canvas.width / window.devicePixelRatio;
+                const canvasHeight = this.canvas.height / window.devicePixelRatio;
+                
+                this.offset.x = canvasWidth / 2 - centerX * this.scale;
+                this.offset.y = canvasHeight / 2 - centerY * this.scale;
+            }
+            
+            resetView() {
+                this.offset.x = 0;
+                this.offset.y = 0;
+                this.scale = 1;
+                this.centerView();
+            }
+            
+            startAnimationLoop() {
+                const animate = () => {
+                    this.draw();
+                    this.animationFrame = requestAnimationFrame(animate);
+                };
+                animate();
+            }
+            
+            draw() {
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width / window.devicePixelRatio, this.canvas.height / window.devicePixelRatio);
+                
+                this.ctx.save();
+                this.ctx.translate(this.offset.x, this.offset.y);
+                this.ctx.scale(this.scale, this.scale);
+                
+                // Draw edges first
+                this.ctx.strokeStyle = 'rgba(100, 255, 218, 0.6)';
+                this.ctx.lineWidth = 2;
+                
+                for (let edge of this.edges) {
+                    const fromNode = this.nodes.find(n => n.id === edge.from);
+                    const toNode = this.nodes.find(n => n.id === edge.to);
+                    
+                    if (fromNode && toNode) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(fromNode.x, fromNode.y);
+                        this.ctx.lineTo(toNode.x, toNode.y);
+                        this.ctx.stroke();
+                    }
+                }
+                
+                // Draw nodes
+                for (let node of this.nodes) {
+                    // Node circle
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, node.size, 0, 2 * Math.PI);
+                    this.ctx.fillStyle = node.color;
+                    this.ctx.fill();
+                    
+                    // Node border
+                    this.ctx.strokeStyle = node.borderColor || '#64ffda';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                    
+                    // Node label
+                    this.ctx.fillStyle = '#e8e8e8';
+                    this.ctx.font = '12px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(node.label, node.x, node.y + node.size + 15);
+                }
+                
+                this.ctx.restore();
+            }
+            
+            applyForceLayout() {
+                // Simple force-based layout for better node positioning
+                const iterations = 50;
+                const repulsion = 100;
+                const attraction = 0.1;
+                
+                for (let iter = 0; iter < iterations; iter++) {
+                    // Repulsion between all nodes
+                    for (let i = 0; i < this.nodes.length; i++) {
+                        for (let j = i + 1; j < this.nodes.length; j++) {
+                            const node1 = this.nodes[i];
+                            const node2 = this.nodes[j];
+                            
+                            const dx = node2.x - node1.x;
+                            const dy = node2.y - node1.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                            
+                            const force = repulsion / (distance * distance);
+                            const fx = (dx / distance) * force;
+                            const fy = (dy / distance) * force;
+                            
+                            node1.x -= fx;
+                            node1.y -= fy;
+                            node2.x += fx;
+                            node2.y += fy;
+                        }
+                    }
+                    
+                    // Attraction along edges
+                    for (let edge of this.edges) {
+                        const fromNode = this.nodes.find(n => n.id === edge.from);
+                        const toNode = this.nodes.find(n => n.id === edge.to);
+                        
+                        if (fromNode && toNode) {
+                            const dx = toNode.x - fromNode.x;
+                            const dy = toNode.y - fromNode.y;
+                            
+                            const fx = dx * attraction;
+                            const fy = dy * attraction;
+                            
+                            fromNode.x += fx;
+                            fromNode.y += fy;
+                            toNode.x -= fx;
+                            toNode.y -= fy;
+                        }
+                    }
+                    
+                    // Keep nodes in bounds
+                    const canvasWidth = this.canvas.width / window.devicePixelRatio;
+                    const canvasHeight = this.canvas.height / window.devicePixelRatio;
+                    
+                    for (let node of this.nodes) {
+                        node.x = Math.max(node.size, Math.min(canvasWidth - node.size, node.x));
+                        node.y = Math.max(node.size, Math.min(canvasHeight - node.size, node.y));
+                    }
+                }
+            }
+            
+            oldMethodsToRemove() {
+                // Placeholder for old D3/vis methods to be removed
+                console.log('Setting up D3.js fallback visualization');
+                
+                // Create basic D3.js structure
+                this.d3Svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', '100%')
+                    .attr('height', '100%');
+                
+                this.d3Container = this.d3Svg.append('g');
+                
+                // Simple data structure for D3
+                this.nodesData = [];
+                this.edgesData = [];
+                
+                // Add zoom behavior
+                const zoom = d3.zoom()
+                    .scaleExtent([0.1, 4])
+                    .on('zoom', (event) => {
+                        this.d3Container.attr('transform', event.transform);
+                    });
+                
+                this.d3Svg.call(zoom);
+                
+                console.log('D3.js fallback visualization ready');
+            }
+            
+            // Mock vis.js methods for D3 fallback
+            updateD3Visualization(nodesData, edgesData) {
+                if (!this.useD3Fallback) return;
+                
+                const width = 800;
+                const height = 600;
+                
+                // Simple force simulation
+                const simulation = d3.forceSimulation(nodesData)
+                    .force('link', d3.forceLink(edgesData).id(d => d.id))
+                    .force('charge', d3.forceManyBody().strength(-300))
+                    .force('center', d3.forceCenter(width / 2, height / 2));
+                
+                // Draw edges
+                const links = this.d3Container.selectAll('.link')
+                    .data(edgesData)
+                    .join('line')
+                    .attr('class', 'link')
+                    .attr('stroke', '#64ffda')
+                    .attr('stroke-width', 2);
+                
+                // Draw nodes
+                const nodes = this.d3Container.selectAll('.node')
+                    .data(nodesData)
+                    .join('circle')
+                    .attr('class', 'node')
+                    .attr('r', d => d.size || 10)
+                    .attr('fill', d => d.color || '#4ecdc4')
+                    .call(d3.drag()
+                        .on('start', (event, d) => {
+                            if (!event.active) simulation.alphaTarget(0.3).restart();
+                            d.fx = d.x;
+                            d.fy = d.y;
+                        })
+                        .on('drag', (event, d) => {
+                            d.fx = event.x;
+                            d.fy = event.y;
+                        })
+                        .on('end', (event, d) => {
+                            if (!event.active) simulation.alphaTarget(0);
+                            d.fx = null;
+                            d.fy = null;
+                        }));
+                
+                // Add labels
+                const labels = this.d3Container.selectAll('.label')
+                    .data(nodesData)
+                    .join('text')
+                    .attr('class', 'label')
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', '.35em')
+                    .attr('fill', '#e8e8e8')
+                    .attr('font-size', '12px')
+                    .text(d => d.label);
+                
+                // Update positions on tick
+                simulation.on('tick', () => {
+                    links
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+                    
+                    nodes
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+                    
+                    labels
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y);
+                });
+                
+                // Add click handlers
+                nodes.on('click', (event, d) => {
+                    if (d.deviceData) {
+                        this.showDeviceDetails(d.deviceData, d.id);
+                    }
+                });
+            }
+            
+            async startDiscovery() {
+                if (this.isScanning) {
+                    this.showAlert('Discovery already in progress', 'warning');
+                    return;
+                }
+                
+                this.isScanning = true;
+                this.showLoadingOverlay(true);
+                this.showProgress(true);
+                this.updateLoadingText('Initializing network discovery...');
+                
+                try {
+                    const scanDepth = document.getElementById('scanDepth').value;
+                    const includePorts = document.getElementById('includePorts').checked;
+                    const includeOS = document.getElementById('includeOS').checked;
+                    
+                    this.updateLoadingText('Scanning network infrastructure...');
+                    this.updateProgress(20, 'Discovering network segments...');
+                    
+                    const response = await fetch(`/api/topology/fast-discovery?depth=${scanDepth}&ports=${includePorts}&os=${includeOS}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    this.updateProgress(50, 'Processing device information...');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.updateProgress(80, 'Building topology visualization...');
+                        await this.processTopologyData(data);
+                        this.updateProgress(100, 'Discovery completed!');
+                        
+                        setTimeout(() => {
+                            this.showProgress(false);
+                            this.showLoadingOverlay(false);
+                        }, 1000);
+                        
+                        this.showAlert(`Discovery completed! Found ${data.performance.total_devices} devices in ${data.performance.discovery_time_seconds}s`, 'success');
+                    } else {
+                        throw new Error(data.error || 'Discovery failed');
+                    }
+                } catch (error) {
+                    console.error('Discovery error:', error);
+                    this.showAlert(`Discovery failed: ${error.message}`, 'error');
+                    this.showProgress(false);
+                    this.showLoadingOverlay(false);
+                } finally {
+                    this.isScanning = false;
+                }
+            }
+            
+            async processTopologyData(data) {
+                this.currentData = data;
+                
+                // Update network status
+                this.updateNetworkStatus(data);
+                
+                // Ensure canvas is initialized
+                if (!this.canvas || !this.ctx) {
+                    this.showAlert('Canvas visualization not initialized properly. Refreshing...', 'warning');
+                    this.setupCanvasVisualization();
+                    return;
+                }
+                
+                // Process devices and create nodes
+                const nodes = [];
+                const edges = [];
+                const vendors = new Set(['all']);
+                
+                // Process devices
+                Object.entries(data.devices || {}).forEach(([ip, device]) => {
+                    const nodeColor = this.getDeviceColor(device.device_type);
+                    const nodeSize = device.device_type === 'router' ? 30 : 20;
+                    const nodeShape = device.device_type === 'router' ? 'star' : 'dot';
+                    
+                    nodes.push({
+                        id: ip,
+                        label: device.hostname || device.ip_address,
+                        title: this.createDeviceTooltip(device),
+                        color: {
+                            background: nodeColor,
+                            border: this.getBorderColor(device.device_type),
+                            highlight: {
+                                background: this.lightenColor(nodeColor, 20),
+                                border: '#64ffda'
+                            }
+                        },
+                        size: nodeSize,
+                        shape: nodeShape,
+                        physics: device.device_type === 'router' ? false : true,
+                        font: {
+                            size: device.device_type === 'router' ? 14 : 12,
+                            color: '#e8e8e8'
+                        },
+                        deviceData: device
+                    });
+                    
+                    if (device.vendor && device.vendor !== 'Unknown') {
+                        vendors.add(device.vendor);
+                    }
+                });
+                
+                // Process relationships to create edges
+                (data.relationships || []).forEach(rel => {
+                    if (rel.source_ip !== rel.target_ip) {
+                        edges.push({
+                            id: `${rel.source_ip}-${rel.target_ip}`,
+                            from: rel.source_ip,
+                            to: rel.target_ip,
+                            width: Math.max(1, rel.strength * 3),
+                            title: `${rel.connection_type} connection\nStrength: ${(rel.strength * 100).toFixed(1)}%`,
+                            color: {
+                                color: this.getConnectionColor(rel.connection_type),
+                                opacity: 0.7
+                            }
+                        });
+                    }
+                });
+                
+                // Update vendor filter
+                this.updateVendorFilter([...vendors].sort());
+                
+                // Update canvas visualization
+                this.nodes = [];
+                this.edges = [];
+                
+                // Convert nodes for canvas
+                const canvasWidth = this.canvas.width / window.devicePixelRatio;
+                const canvasHeight = this.canvas.height / window.devicePixelRatio;
+                
+                nodes.forEach((node, index) => {
+                    this.nodes.push({
+                        id: node.id,
+                        x: Math.random() * (canvasWidth - 100) + 50,
+                        y: Math.random() * (canvasHeight - 100) + 50,
+                        label: node.label,
+                        color: node.color.background,
+                        borderColor: node.color.border,
+                        size: node.size,
+                        deviceData: node.deviceData
+                    });
+                });
+                
+                // Convert edges for canvas
+                edges.forEach(edge => {
+                    this.edges.push({
+                        id: edge.id,
+                        from: edge.from,
+                        to: edge.to,
+                        width: edge.width || 2
+                    });
+                });
+                
+                // Apply simple force layout
+                this.applyForceLayout();
+                
+                // Center the view on the network
+                setTimeout(() => {
+                    this.centerView();
+                }, 100);
+                
+                // Update statistics
+                this.updateStatistics(data);
+            }
+            
+            updateNetworkStatus(data) {
+                document.getElementById('currentNetwork').textContent = 
+                    data.network_info?.ssid || data.network_info?.subnet || 'Unknown';
+                document.getElementById('routerIP').textContent = 
+                    data.wifi_router || 'Not detected';
+                document.getElementById('deviceCount').textContent = 
+                    Object.keys(data.devices || {}).length;
+                document.getElementById('discoveryTime').textContent = 
+                    `${data.performance?.discovery_time_seconds || 0}s`;
+            }
+            
+            updateStatistics(data) {
+                const stats = data.statistics || {};
+                const performance = data.performance || {};
+                
+                document.getElementById('totalDevices').textContent = 
+                    performance.total_devices || 0;
+                document.getElementById('activeConnections').textContent = 
+                    (data.relationships || []).length;
+                document.getElementById('networkSegments').textContent = 
+                    Object.keys(data.segments || {}).length || 1;
+                document.getElementById('discoverySpeed').textContent = 
+                    `${performance.devices_per_second || 0}/s`;
+            }
+            
+            getDeviceColor(deviceType) {
+                const colors = {
+                    'router': '#ff6b6b',
+                    'desktop': '#4ecdc4',
+                    'laptop': '#45b7d1',
+                    'mobile': '#96ceb4',
+                    'iot': '#feca57',
+                    'printer': '#a55eea',
+                    'unknown': '#6c7b7f'
+                };
+                return colors[deviceType] || colors.unknown;
+            }
+            
+            getBorderColor(deviceType) {
+                return deviceType === 'router' ? '#ff4757' : '#64ffda';
+            }
+            
+            getConnectionColor(connectionType) {
+                const colors = {
+                    'direct': '#64ffda',
+                    'wireless': '#45b7d1',
+                    'ethernet': '#4ecdc4',
+                    'unknown': '#8892b0'
+                };
+                return colors[connectionType] || colors.unknown;
+            }
+            
+            lightenColor(color, percent) {
+                const num = parseInt(color.replace("#",""), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) + amt;
+                const B = (num >> 8 & 0x00FF) + amt;
+                const G = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
+            }
+            
+            createDeviceTooltip(device) {
+                return `
+                    <strong>${device.hostname || device.ip_address}</strong><br>
+                    IP: ${device.ip_address}<br>
+                    MAC: ${device.mac_address || 'Unknown'}<br>
+                    Type: ${device.device_type}<br>
+                    Vendor: ${device.vendor || 'Unknown'}<br>
+                    OS: ${device.os_info || 'Unknown'}<br>
+                    Last Seen: ${new Date(device.last_seen * 1000).toLocaleString()}
+                `;
+            }
+            
+            handleNodeClick(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const nodeData = this.nodes.get(nodeId);
+                    this.showDeviceDetails(nodeData.deviceData, nodeId);
+                }
+            }
+            
+            handleNodeHover(params) {
+                const nodeId = params.node;
+                this.network.canvas.body.container.style.cursor = 'pointer';
+            }
+            
+            handleNodeBlur(params) {
+                this.network.canvas.body.container.style.cursor = 'default';
+            }
+            
+            async showDeviceDetails(device, nodeId) {
+                this.selectedDevice = nodeId;
+                const detailsPanel = document.getElementById('deviceDetails');
+                const deviceInfo = document.getElementById('deviceInfo');
+                
+                document.getElementById('deviceTitle').textContent = 
+                    device.hostname || device.ip_address;
+                
+                // Create device info HTML
+                const infoHTML = `
+                    <div class="info-item">
+                        <label>IP Address</label>
+                        <div class="value">${device.ip_address}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>MAC Address</label>
+                        <div class="value">${device.mac_address || 'Unknown'}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Hostname</label>
+                        <div class="value">${device.hostname || 'Unknown'}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Device Type</label>
+                        <div class="value">${this.capitalizeFirst(device.device_type)}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Vendor</label>
+                        <div class="value">${device.vendor || 'Unknown'}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Operating System</label>
+                        <div class="value">${device.os_info || 'Unknown'}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Open Ports</label>
+                        <div class="value">${(device.open_ports || []).join(', ') || 'None detected'}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Last Seen</label>
+                        <div class="value">${new Date(device.last_seen * 1000).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Security Status</label>
+                        <div class="value" style="color: ${this.getSecurityColor(device.security_status)}">
+                            ${this.capitalizeFirst(device.security_status)}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Trust Level</label>
+                        <div class="value">${device.trust_level || 0}/10</div>
+                    </div>
+                `;
+                
+                deviceInfo.innerHTML = infoHTML;
+                detailsPanel.classList.add('active');
+                
+                // Get detailed device information if available
+                try {
+                    const response = await fetch(`/api/topology/device-info/${device.ip_address}`);
+                    if (response.ok) {
+                        const detailedData = await response.json();
+                        if (detailedData.success && detailedData.device) {
+                            this.updateDeviceDetails(detailedData.device);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching detailed device info:', error);
+                }
+            }
+            
+            updateDeviceDetails(detailedDevice) {
+                // Update with more detailed information if available
+                const deviceInfo = document.getElementById('deviceInfo');
+                // Add any additional detailed information here
+            }
+            
+            hideDeviceDetails() {
+                document.getElementById('deviceDetails').classList.remove('active');
+                this.selectedDevice = null;
+            }
+            
+            getSecurityColor(status) {
+                const colors = {
+                    'secure': '#68d391',
+                    'moderate': '#f6e05e',
+                    'high_risk': '#f56565',
+                    'unknown': '#8892b0'
+                };
+                return colors[status] || colors.unknown;
+            }
+            
+            capitalizeFirst(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ');
+            }
+            
+            updateVendorFilter(vendors) {
+                const vendorFilter = document.getElementById('vendorFilter');
+                vendorFilter.innerHTML = vendors.map(vendor => 
+                    `<option value="${vendor}">${vendor}</option>`
+                ).join('');
+            }
+            
+            applyFilters() {
+                if (!this.currentData) return;
+                
+                const deviceTypeFilter = document.getElementById('deviceTypeFilter').value;
+                const vendorFilter = document.getElementById('vendorFilter').value;
+                const ipFilter = document.getElementById('ipFilter').value.trim();
+                
+                const filteredNodes = [];
+                const filteredEdges = [];
+                
+                // Filter nodes
+                Object.entries(this.currentData.devices || {}).forEach(([ip, device]) => {
+                    let include = true;
+                    
+                    // Device type filter
+                    if (deviceTypeFilter !== 'all' && device.device_type !== deviceTypeFilter) {
+                        include = false;
+                    }
+                    
+                    // Vendor filter
+                    if (vendorFilter !== 'all' && device.vendor !== vendorFilter) {
+                        include = false;
+                    }
+                    
+                    // IP filter
+                    if (ipFilter && !ip.includes(ipFilter)) {
+                        include = false;
+                    }
+                    
+                    if (include) {
+                        const nodeColor = this.getDeviceColor(device.device_type);
+                        const nodeSize = device.device_type === 'router' ? 30 : 20;
+                        
+                        filteredNodes.push({
+                            id: ip,
+                            label: device.hostname || device.ip_address,
+                            color: {
+                                background: nodeColor,
+                                border: this.getBorderColor(device.device_type)
+                            },
+                            size: nodeSize,
+                            deviceData: device
+                        });
+                    }
+                });
+                
+                // Filter edges (only include edges where both nodes are visible)
+                const visibleNodeIds = new Set(filteredNodes.map(node => node.id));
+                (this.currentData.relationships || []).forEach(rel => {
+                    if (visibleNodeIds.has(rel.source_ip) && visibleNodeIds.has(rel.target_ip)) {
+                        filteredEdges.push({
+                            id: `${rel.source_ip}-${rel.target_ip}`,
+                            from: rel.source_ip,
+                            to: rel.target_ip,
+                            width: Math.max(1, rel.strength * 3)
+                        });
+                    }
+                });
+                
+                // Update canvas visualization directly
+                this.nodes = [];
+                this.edges = [];
+                
+                const canvasWidth = this.canvas.width / window.devicePixelRatio;
+                const canvasHeight = this.canvas.height / window.devicePixelRatio;
+                
+                filteredNodes.forEach((node, index) => {
+                    this.nodes.push({
+                        id: node.id,
+                        x: Math.random() * (canvasWidth - 100) + 50,
+                        y: Math.random() * (canvasHeight - 100) + 50,
+                        label: node.label,
+                        color: node.color.background,
+                        borderColor: node.color.border,
+                        size: node.size,
+                        deviceData: node.deviceData
+                    });
+                });
+                
+                filteredEdges.forEach(edge => {
+                    this.edges.push({
+                        id: edge.id,
+                        from: edge.from,
+                        to: edge.to,
+                        width: edge.width || 2
+                    });
+                });
+                
+                // Apply layout and update stats
+                this.applyForceLayout();
+                
+                // Update device count
+                document.getElementById('totalDevices').textContent = filteredNodes.length;
+                document.getElementById('activeConnections').textContent = filteredEdges.length;
+            }
+            
+            async refreshTopology() {
+                this.showAlert('Refreshing topology...', 'info');
+                await this.startDiscovery();
+            }
+            
+            startAutoRefresh() {
+                if (this.autoRefreshInterval) {
+                    clearInterval(this.autoRefreshInterval);
+                }
+                
+                this.autoRefreshInterval = setInterval(() => {
+                    if (!this.isScanning) {
+                        this.refreshTopology();
+                    }
+                }, 30000); // 30 seconds
+                
+                this.showAlert('Auto-refresh enabled (30s intervals)', 'info');
+            }
+            
+            stopAutoRefresh() {
+                if (this.autoRefreshInterval) {
+                    clearInterval(this.autoRefreshInterval);
+                    this.autoRefreshInterval = null;
+                }
+                this.showAlert('Auto-refresh disabled', 'info');
+            }
+            
+            exportTopology() {
+                if (!this.currentData) {
+                    this.showAlert('No topology data to export', 'warning');
+                    return;
+                }
+                
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    topology: this.currentData,
+                    visualization: {
+                        nodes: this.nodes,
+                        edges: this.edges
+                    }
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], 
+                    { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `network_topology_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showAlert('Topology exported successfully', 'success');
+            }
+            
+            toggleFullscreen() {
+                const visualization = document.querySelector('.topology-visualization');
+                if (!document.fullscreenElement) {
+                    visualization.requestFullscreen();
+                    document.getElementById('fullscreenToggle').innerHTML = '<i class="fas fa-compress"></i>';
+                } else {
+                    document.exitFullscreen();
+                    document.getElementById('fullscreenToggle').innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+            
+            toggleFilters() {
+                const filterToggle = document.getElementById('filterToggle');
+                const filterContent = document.getElementById('filterContent');
+                
+                if (filterToggle && filterContent) {
+                    filterToggle.classList.toggle('active');
+                    filterContent.classList.toggle('active');
+                }
+            }
+            
+            toggleMobileMenu() {
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar) {
+                    sidebar.classList.toggle('mobile-open');
+                }
+            }
+            
+            handleResize() {
+                if (window.innerWidth <= 768) {
+                    const mobileToggle = document.getElementById('mobileMenuToggle');
+                    if (mobileToggle) {
+                        mobileToggle.style.display = 'block';
+                    }
+                } else {
+                    const mobileToggle = document.getElementById('mobileMenuToggle');
+                    if (mobileToggle) {
+                        mobileToggle.style.display = 'none';
+                    }
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                }
+                
+                if (this.canvas) {
+                    this.resizeCanvas();
+                }
+            }
+            
+            showLoadingOverlay(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+            
+            updateLoadingText(text, subtext = null) {
+                document.querySelector('.loading-text').textContent = text;
+                if (subtext) {
+                    document.querySelector('.loading-subtext').textContent = subtext;
+                }
+            }
+            
+            showProgress(show) {
+                const container = document.getElementById('progressContainer');
+                container.style.display = show ? 'block' : 'none';
+                if (!show) {
+                    this.updateProgress(0, '');
+                }
+            }
+            
+            updateProgress(percent, text = '') {
+                const fill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                fill.style.width = `${percent}%`;
+                if (text) {
+                    progressText.textContent = text;
+                }
+            }
+            
+            showAlert(message, type = 'info') {
+                const container = document.getElementById('alertsContainer');
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                
+                const icon = type === 'success' ? 'check-circle' : 
+                            type === 'warning' ? 'exclamation-triangle' :
+                            type === 'error' ? 'times-circle' : 'info-circle';
+                
+                alert.innerHTML = `
+                    <i class="fas fa-${icon}"></i>
+                    <span>${message}</span>
+                `;
+                
+                container.appendChild(alert);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 5000);
+                
+                // Limit to 3 alerts maximum
+                while (container.children.length > 3) {
+                    container.removeChild(container.firstChild);
+                }
+            }
+        }
+        
+        // Initialize the topology manager when the page loads  
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                console.log('Initializing Canvas-based topology manager...');
+                window.topologyManager = new NetworkTopologyManager();
+            } catch (error) {
+                console.error('Failed to initialize topology manager:', error);
+                
+                // Show error message to user
+                const alertsContainer = document.getElementById('alertsContainer');
+                if (alertsContainer) {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-error';
+                    alert.innerHTML = `
+                        <i class="fas fa-times-circle"></i>
+                        <span>Failed to initialize network topology visualization: ${error.message}</span>
+                    `;
+                    alertsContainer.appendChild(alert);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

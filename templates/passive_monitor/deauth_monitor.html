@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Deauth Monitor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 35%, #2c1810 100%);
+            color: #e8e8e8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #ccd6f6;
+            font-size: 32px;
+            font-weight: 300;
+        }
+
+        .back-link {
+            color: #64ffda;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+        }
+
+        .card {
+            background: rgba(15, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            color: #ccd6f6;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .card-icon {
+            margin-right: 12px;
+            color: #fb8500;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-warning {
+            background: rgba(251, 133, 0, 0.2);
+            color: #fb8500;
+            border: 1px solid rgba(251, 133, 0, 0.3);
+        }
+
+        .btn-warning:hover {
+            background: rgba(251, 133, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .info-text {
+            color: #8892b0;
+            font-style: italic;
+            text-align: center;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Deauth Attack Monitor</h1>
+            <a href="/passive-monitor" class="back-link">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-ban card-icon"></i>
+                    Deauthentication Attack Detection
+                </h3>
+                <button class="btn btn-warning" onclick="startMonitoring()">
+                    <i class="fas fa-eye"></i>
+                    Start Monitoring
+                </button>
+            </div>
+            <div class="card-content">
+                <div class="info-text">
+                    Monitor for deauthentication attack patterns and flooding attempts. 
+                    Detects malicious disconnection attempts and wireless denial of service attacks.
+                    Click "Start Monitoring" to begin detecting deauth attacks.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startMonitoring() {
+            alert('Deauth monitoring functionality will be implemented here.');
+        }
+    </script>
+</body>
+</html>

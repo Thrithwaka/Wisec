@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Wi-Fi Security System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Left side - Video Container */
+        .video-container {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 20px;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .video-wrapper:hover .video-overlay {
+            opacity: 1;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            background: white;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #667eea;
+        }
+
+        .video-content {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .video-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #fff, #f8f9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-content p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+            opacity: 0.95;
+        }
+
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .floating-icon {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 2rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-icon:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-icon:nth-child(2) {
+            top: 60%;
+            left: 85%;
+            animation-delay: 2s;
+        }
+
+        .floating-icon:nth-child(3) {
+            top: 40%;
+            left: 5%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* Right side - Registration Form */
+        .form-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateX(20px);
+            opacity: 0;
+            animation: slideInRight 0.8s ease forwards;
+        }
+
+        @keyframes slideInRight {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .register-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group input.error,
+        .form-group textarea.error {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .form-group input.valid,
+        .form-group textarea.valid {
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .password-requirements {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .password-requirements h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .requirement.met {
+            color: #2ecc71;
+        }
+
+        .requirement.met::before {
+            content: "✓";
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .requirement:not(.met)::before {
+            content: "○";
+            margin-right: 8px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #555;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .register-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .register-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #764ba2;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .flash-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .character-count {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .character-count.over-limit {
+            color: #e74c3c;
+        }
+
+        .character-count.near-limit {
+            color: #f39c12;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .video-container {
+                min-height: 40vh;
+                padding: 30px;
+            }
+            
+            .video-content h2 {
+                font-size: 2rem;
+            }
+            
+            .video-content p {
+                font-size: 1rem;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .register-container {
+                animation: slideInUp 0.8s ease forwards;
+            }
+            
+            @keyframes slideInUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .form-row .form-group {
+                margin-bottom: 25px;
+            }
+            
+            .video-container {
+                padding: 20px;
+            }
+            
+            .video-content h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .register-header h1 {
+                font-size: 2rem;
+            }
+            
+            .video-container {
+                padding: 15px;
+            }
+            
+            .video-content h2 {
+                font-size: 1.6rem;
+            }
+            
+            .video-content p {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Custom scrollbar for the form */
+        .register-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .register-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        .register-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+
+        .register-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left side - Video Container -->
+        <div class="video-container">
+            <div class="floating-elements">
+                <div class="floating-icon">🔒</div>
+                <div class="floating-icon">🛡️</div>
+                <div class="floating-icon">📡</div>
+            </div>
+            
+            <div class="video-content">
+                <h2>Secure Your Network</h2>
+                <p>Discover advanced Wi-Fi security solutions with our cutting-edge vulnerability detection system. Protect your network from threats and ensure optimal security.</p>
+            </div>
+            
+            <div class="video-wrapper">
+                <video id="teamVideo" autoplay muted loop playsinline>
+                    <source src="/static/Videos/team_video.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <div class="video-overlay">
+                    <div class="video-controls">
+                        <button class="control-btn" id="playPauseBtn" title="Play/Pause">
+                            <svg id="playIcon" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                            </svg>
+                        </button>
+                        
+                        <button class="control-btn" id="muteBtn" title="Mute/Unmute">
+                            <svg id="unmuteIcon" viewBox="0 0 24 24">
+                                <path d="M3 10v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71V6.41c0-.89-1.08-1.34-1.71-.71L7 9H4c-.55 0-1 .45-1 1zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                            <svg id="muteIcon" viewBox="0 0 24 24" style="display: none;">
+                                <path d="M7 9v6h4l5 5V4l-5 5H7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Registration Form -->
+        <div class="form-container">
+            <div class="register-container">
+                <div class="register-header">
+                    <h1>🔒 Register</h1>
+                    <p>Create your Wi-Fi Security Account</p>
+                </div>
+
+                <!-- Flash Messages -->
+                <div class="flash-messages">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="flash-message {{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", id="email", placeholder="Enter your email address") }}
+                        {% if form.email.errors %}
+                            <div class="error-message">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Name Fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.first_name.label(class="form-label") }}
+                            {{ form.first_name(class="form-control", id="firstName", placeholder="Enter your first name") }}
+                            {% if form.first_name.errors %}
+                                <div class="error-message">
+                                    {% for error in form.first_name.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.last_name.label(class="form-label") }}
+                            {{ form.last_name(class="form-control", id="lastName", placeholder="Enter your last name") }}
+                            {% if form.last_name.errors %}
+                                <div class="error-message">
+                                    {% for error in form.last_name.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Organization Field -->
+                    <div class="form-group">
+                        {{ form.organization.label(class="form-label") }}
+                        {{ form.organization(class="form-control", id="organization", placeholder="Enter your organization (optional)") }}
+                        {% if form.organization.errors %}
+                            <div class="error-message">
+                                {% for error in form.organization.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Purpose Field -->
+                    <div class="form-group">
+                        {{ form.purpose.label(class="form-label") }}
+                        {{ form.purpose(class="form-control", id="purpose", placeholder="Describe your intended use of the Wi-Fi security system") }}
+                        <div class="character-count" id="purposeCount">0 / 500 characters</div>
+                        {% if form.purpose.errors %}
+                            <div class="error-message">
+                                {% for error in form.purpose.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", id="password", placeholder="Create a strong password") }}
+                        {% if form.password.errors %}
+                            <div class="error-message">
+                                {% for error in form.password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="password-requirements">
+                            <h4>Password Requirements:</h4>
+                            <div class="requirement" id="req-length">At least 8 characters</div>
+                            <div class="requirement" id="req-uppercase">One uppercase letter</div>
+                            <div class="requirement" id="req-lowercase">One lowercase letter</div>
+                            <div class="requirement" id="req-number">One number</div>
+                            <div class="requirement" id="req-special">One special character</div>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="form-group">
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password(class="form-control", id="confirmPassword", placeholder="Confirm your password") }}
+                        {% if form.confirm_password.errors %}
+                            <div class="error-message">
+                                {% for error in form.confirm_password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="checkbox-group">
+                        {{ form.terms_accepted(id="termsAccepted") }}
+                        {{ form.terms_accepted.label(for="termsAccepted") }}
+                        {% if form.terms_accepted.errors %}
+                            <div class="error-message">
+                                {% for error in form.terms_accepted.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="register-btn" id="registerBtn">
+                        Create Account
+                    </button>
+
+                    <div class="loading" id="loadingSpinner">
+                        <div class="spinner"></div>
+                        <p>Creating your account...</p>
+                    </div>
+                </form>
+
+                <div class="login-link">
+                    <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Video controls
+        const video = document.getElementById('teamVideo');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const unmuteIcon = document.getElementById('unmuteIcon');
+        const muteIconElement = document.getElementById('muteIcon');
+
+        // Play/Pause functionality
+        playPauseBtn.addEventListener('click', function() {
+            if (video.paused) {
+                video.play();
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                video.pause();
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        });
+
+        // Mute/Unmute functionality
+        muteBtn.addEventListener('click', function() {
+            if (video.muted) {
+                video.muted = false;
+                unmuteIcon.style.display = 'block';
+                muteIconElement.style.display = 'none';
+            } else {
+                video.muted = true;
+                unmuteIcon.style.display = 'none';
+                muteIconElement.style.display = 'block';
+            }
+        });
+
+        // Update play/pause icon based on video state
+        video.addEventListener('play', function() {
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+        });
+
+        video.addEventListener('pause', function() {
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        });
+
+        // Form elements
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const registerBtn = document.getElementById('registerBtn');
+        const emailInput = document.getElementById('email');
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const purposeInput = document.getElementById('purpose');
+        const purposeCount = document.getElementById('purposeCount');
+        const termsCheckbox = document.getElementById('termsAccepted');
+
+        // Password requirements elements
+        const requirements = {
+            length: document.getElementById('req-length'),
+            uppercase: document.getElementById('req-uppercase'),
+            lowercase: document.getElementById('req-lowercase'),
+            number: document.getElementById('req-number'),
+            special: document.getElementById('req-special')
+        };
+
+        // Purpose character counter
+        if (purposeInput && purposeCount) {
+            purposeInput.addEventListener('input', function() {
+                const length = this.value.length;
+                purposeCount.textContent = `${length} / 500 characters`;
+                
+                if (length > 500) {
+                    purposeCount.classList.add('over-limit');
+                    purposeCount.classList.remove('near-limit');
+                } else if (length > 450) {
+                    purposeCount.classList.add('near-limit');
+                    purposeCount.classList.remove('over-limit');
+                } else {
+                    purposeCount.classList.remove('over-limit', 'near-limit');
+                }
+            });
+        }
+
+        // Real-time password validation
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                
+                // Check length
+                if (password.length >= 8) {
+                    requirements.length.classList.add('met');
+                } else {
+                    requirements.length.classList.remove('met');
+                }
+
+                // Check uppercase
+                if (/[A-Z]/.test(password)) {
+                    requirements.uppercase.classList.add('met');
+                } else {
+                    requirements.uppercase.classList.remove('met');
+                }
+
+                // Check lowercase
+                if (/[a-z]/.test(password)) {
+                    requirements.lowercase.classList.add('met');
+                } else {
+                    requirements.lowercase.classList.remove('met');
+                }
+
+                // Check number
+                if (/\d/.test(password)) {
+                    requirements.number.classList.add('met');
+                } else {
+                    requirements.number.classList.remove('met');
+                }
+
+                // Check special character
+                if (/[@$!%*?&]/.test(password)) {
+                    requirements.special.classList.add('met');
+                } else {
+                    requirements.special.classList.remove('met');
+                }
+
+                // Visual feedback
+                if (validatePassword(password)) {
+                    passwordInput.classList.remove('error');
+                    passwordInput.classList.add('valid');
+                } else {
+                    passwordInput.classList.remove('valid');
+                    if (password.length > 0) {
+                        passwordInput.classList.add('error');
+                    }
+                }
+
+                // Check password match
+                checkPasswordMatch();
+            });
+        }
+
+        // Password confirmation validation
+        if (confirmPasswordInput) {
+            confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+        }
+
+        function checkPasswordMatch() {
+            if (!passwordInput || !confirmPasswordInput) return;
+            
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (confirmPassword.length > 0) {
+                if (password === confirmPassword) {
+                    confirmPasswordInput.classList.remove('error');
+                    confirmPasswordInput.classList.add('valid');
+                } else {
+                    confirmPasswordInput.classList.remove('valid');
+                    confirmPasswordInput.classList.add('error');
+                }
+            }
+        }
+
+        // Email validation
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                const email = this.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (emailRegex.test(email)) {
+                    this.classList.remove('error');
+                    this.classList.add('valid');
+                } else {
+                    this.classList.remove('valid');
+                    if (email.length > 0) {
+                        this.classList.add('error');
+                    }
+                }
+            });
+        }
+
+        // Name validation
+        function validateName(input) {
+            if (!input) return;
+            
+            input.addEventListener('input', function() {
+                const name = this.value;
+                const nameRegex = /^[A-Za-z\s\-']+$/;
+                
+                if (name.length >= 2 && nameRegex.test(name)) {
+                    this.classList.remove('error');
+                    this.classList.add('valid');
+                } else {
+                    this.classList.remove('valid');
+                    if (name.length > 0) {
+                        this.classList.add('error');
+                    }
+                }
+            });
+        }
+
+        validateName(firstNameInput);
+        validateName(lastNameInput);
+
+        function validatePassword(password) {
+            return password.length >= 8 &&
+                   /[A-Z]/.test(password) &&
+                   /[a-z]/.test(password) &&
+                   /\d/.test(password) &&
+                   /[@$!%*?&]/.test(password);
+        }
+
+        function validateForm() {
+            const email = emailInput ? emailInput.value : '';
+            const firstName = firstNameInput ? firstNameInput.value : '';
+            const lastName = lastNameInput ? lastNameInput.value : '';
+            const purpose = purposeInput ? purposeInput.value : '';
+            const password = passwordInput ? passwordInput.value : '';
+            const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+            const termsAccepted = termsCheckbox ? termsCheckbox.checked : false;
+            
+            const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            const firstNameValid = firstName.length >= 2 && /^[A-Za-z\s\-']+$/.test(firstName);
+            const lastNameValid = lastName.length >= 2 && /^[A-Za-z\s\-']+$/.test(lastName);
+            const purposeValid = purpose.length >= 20 && purpose.length <= 500;
+            const passwordValid = validatePassword(password);
+            const passwordsMatch = password === confirmPassword;
+            
+            return emailValid && firstNameValid && lastNameValid && 
+                   purposeValid && passwordValid && passwordsMatch && termsAccepted;
+        }
+
+        // Form submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                alert('Please fill in all fields correctly before submitting.');
+                return;
+            }
+
+            // Show loading spinner
+            registerBtn.style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'block';
+        });
+
+        // API validation (if available)
+        let emailTimeout;
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                clearTimeout(emailTimeout);
+                const email = this.value;
+                
+                if (email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    emailTimeout = setTimeout(() => {
+                        fetch('/auth/api/validate-email', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ email: email })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.valid === false) {
+                                emailInput.classList.add('error');
+                                emailInput.classList.remove('valid');
+                            }
+                        })
+                        .catch(error => {
+                            console.log('Email validation API not available');
+                        });
+                    }, 500);
+                }
+            });
+        }
+
+        // Enable/disable submit button based on form validity
+        function updateSubmitButton() {
+            if (registerBtn) {
+                registerBtn.disabled = !validateForm();
+            }
+        }
+
+        // Add listeners to all form inputs
+        const formInputs = [emailInput, firstNameInput, lastNameInput, purposeInput, passwordInput, confirmPasswordInput, termsCheckbox];
+        formInputs.forEach(input => {
+            if (input) {
+                input.addEventListener('input', updateSubmitButton);
+                input.addEventListener('change', updateSubmitButton);
+            }
+        });
+
+        // Initial button state
+        updateSubmitButton();
+
+        // Smooth scroll effect for form inputs
+        const formGroups = document.querySelectorAll('.form-group input, .form-group textarea');
+        formGroups.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.matches(':focus')) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe form groups for staggered animation
+        const formGroupElements = document.querySelectorAll('.form-group');
+        formGroupElements.forEach((group, index) => {
+            group.style.opacity = '0';
+            group.style.transform = 'translateY(20px)';
+            group.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+            observer.observe(group);
+        });
+
+        // Video error handling
+        video.addEventListener('error', function(e) {
+            console.error('Video loading error:', e);
+            const videoWrapper = document.querySelector('.video-wrapper');
+            videoWrapper.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 300px; background: rgba(255,255,255,0.1); border-radius: 20px; color: white; text-align: center; padding: 40px;">
+                    <div>
+                        <h3 style="margin-bottom: 15px;">🎥 Video Preview</h3>
+                        <p>Your team video will be displayed here</p>
+                        <small style="opacity: 0.7;">Make sure the video file is placed in: /static/Videos/team video.mp4</small>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Enhanced form submission with animation
+        const form = document.getElementById('registerForm');
+        form.addEventListener('submit', function(e) {
+            if (validateForm()) {
+                // Add success animation
+                registerBtn.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 10px;"><div class="spinner" style="width: 20px; height: 20px; margin: 0;"></div> Creating Account...</span>';
+                registerBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+            }
+        });
+
+        // Add parallax effect to floating elements
+        document.addEventListener('mousemove', function(e) {
+            const floatingElements = document.querySelectorAll('.floating-icon');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            floatingElements.forEach((element, index) => {
+                const speed = (index + 1) * 0.5;
+                const x = (mouseX - 0.5) * speed * 20;
+                const y = (mouseY - 0.5) * speed * 20;
+                element.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

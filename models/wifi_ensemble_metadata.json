@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "created": "2025-07-10 07:17:33",
+  "model_type": "WiFi LSTM Ensemble Fusion Model",
+  "num_classes": 10,
+  "input_shape": [
+    50,
+    48
+  ],
+  "class_names": [
+    "NORMAL_BEHAVIOR",
+    "BRUTE_FORCE_ATTACK",
+    "RECONNAISSANCE",
+    "DATA_EXFILTRATION",
+    "BOTNET_ACTIVITY",
+    "INSIDER_THREAT",
+    "APT_BEHAVIOR",
+    "DDOS_PREPARATION",
+    "LATERAL_MOVEMENT",
+    "COMMAND_CONTROL"
+  ],
+  "description": "Ensemble model for WiFi network threat detection",
+  "target_accuracy": "91-94%",
+  "component_models": [
+    "LSTM Neural Network",
+    "CNN-LSTM Hybrid",
+    "GNN Attention Model",
+    "Random Forest Classifier",
+    "Gradient Boosting Classifier"
+  ]
+}

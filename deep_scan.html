@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Current WiFi Network Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 35%, #2c1810 100%);
+            color: #e8e8e8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #64ffda;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #8892b0;
+            font-size: 18px;
+        }
+
+        .network-card {
+            background: rgba(15, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .network-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .network-title {
+            display: flex;
+            align-items: center;
+            color: #64ffda;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .network-title i {
+            margin-right: 12px;
+            font-size: 28px;
+        }
+
+        .connection-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-connected {
+            background: rgba(46, 160, 67, 0.2);
+            color: #2ea043;
+            border: 1px solid rgba(46, 160, 67, 0.3);
+        }
+
+        .status-disconnected {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .network-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-group {
+            background: rgba(26, 31, 46, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .info-group h3 {
+            color: #ccd6f6;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-group h3 i {
+            margin-right: 10px;
+            color: #64ffda;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.05);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #8892b0;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #ccd6f6;
+            font-weight: 500;
+        }
+
+        .signal-strength {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .signal-bars {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 4px;
+            background: #3a4553;
+            border-radius: 2px;
+        }
+
+        .bar:nth-child(1) { height: 8px; }
+        .bar:nth-child(2) { height: 12px; }
+        .bar:nth-child(3) { height: 16px; }
+        .bar:nth-child(4) { height: 20px; }
+
+        .bar.strong { background: #2ea043; }
+        .bar.medium { background: #fb8500; }
+        .bar.weak { background: #f85149; }
+
+        .security-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .security-high {
+            background: rgba(46, 160, 67, 0.2);
+            color: #2ea043;
+        }
+
+        .security-medium {
+            background: rgba(251, 133, 0, 0.2);
+            color: #fb8500;
+        }
+
+        .security-low {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #533ee8 0%, #6c5ce7 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(83, 62, 232, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(83, 62, 232, 0.4);
+        }
+
+        .refresh-btn i {
+            margin-right: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #8892b0;
+            padding: 40px;
+        }
+
+        .loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            border-top: 2px solid #64ffda;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            text-align: center;
+            color: #f85149;
+            padding: 40px;
+        }
+
+        .no-connection {
+            text-align: center;
+            color: #8892b0;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .network-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .network-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WISEC</h1>
+            <p>Current WiFi Network Analysis</p>
+        </div>
+
+        <div class="network-card">
+            <div class="network-header">
+                <div class="network-title">
+                    <i class="fas fa-wifi"></i>
+                    <span id="networkName">Current Network</span>
+                </div>
+                <div class="connection-status status-connected" id="connectionStatus">
+                    <i class="fas fa-circle"></i>
+                    Connected
+                </div>
+            </div>
+
+            <div class="network-info" id="networkInfo">
+                <div class="loading">Loading network information...</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="refresh-btn" onclick="refreshNetworkInfo()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Information
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let networkData = null;
+        let isLoading = false;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Current WiFi Network Analysis interface loaded');
+            loadNetworkInfo();
+        });
+
+        // Load current network information
+        async function loadNetworkInfo() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const networkInfo = document.getElementById('networkInfo');
+            networkInfo.innerHTML = '<div class="loading">Loading network information...</div>';
+
+            try {
+                const response = await fetch('/api/current-wifi-info', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (response.ok) {
+                    networkData = await response.json();
+                    displayNetworkInfo(networkData);
+                } else if (response.status === 404) {
+                    displayNoConnection();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Error loading network info:', error);
+                displayError('Failed to load network information: ' + error.message);
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Display network information
+        function displayNetworkInfo(data) {
+            const networkName = document.getElementById('networkName');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const networkInfo = document.getElementById('networkInfo');
+
+            // Update header
+            networkName.textContent = data.ssid || 'Unknown Network';
+            
+            if (data.connected) {
+                connectionStatus.className = 'connection-status status-connected';
+                connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+            } else {
+                connectionStatus.className = 'connection-status status-disconnected';
+                connectionStatus.innerHTML = '<i class="fas fa-times-circle"></i> Disconnected';
+            }
+
+            // Create network information display
+            const signalBars = generateSignalBars(data.signal_strength);
+            const securityLevel = getSecurityLevel(data.encryption);
+
+            networkInfo.innerHTML = `
+                <div class="info-group">
+                    <h3><i class="fas fa-info-circle"></i>Basic Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Network Name (SSID)</span>
+                        <span class="info-value">${data.ssid || 'Hidden Network'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">BSSID</span>
+                        <span class="info-value">${data.bssid || 'Unknown'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Channel</span>
+                        <span class="info-value">${data.channel || 'Unknown'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Frequency</span>
+                        <span class="info-value">${data.frequency || 'Unknown'} MHz</span>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3><i class="fas fa-signal"></i>Signal & Performance</h3>
+                    <div class="info-item">
+                        <span class="info-label">Signal Strength</span>
+                        <div class="signal-strength">
+                            <div class="signal-bars">${signalBars}</div>
+                            <span class="info-value">${data.signal_strength || 'Unknown'} dBm</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Link Quality</span>
+                        <span class="info-value">${data.link_quality || 'Unknown'}%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Data Rate</span>
+                        <span class="info-value">${data.data_rate || 'Unknown'} Mbps</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Network Type</span>
+                        <span class="info-value">${data.network_type || 'Unknown'}</span>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3><i class="fas fa-shield-alt"></i>Security Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Encryption</span>
+                        <span class="info-value">${data.encryption || 'Open'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Security Level</span>
+                        <span class="security-badge ${securityLevel.class}">${securityLevel.text}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Authentication</span>
+                        <span class="info-value">${data.authentication || 'None'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">WPS Available</span>
+                        <span class="info-value">${data.wps_enabled ? 'Yes' : 'No'}</span>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3><i class="fas fa-network-wired"></i>Network Details</h3>
+                    <div class="info-item">
+                        <span class="info-label">IP Address</span>
+                        <span class="info-value">${data.ip_address || 'Not assigned'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Gateway</span>
+                        <span class="info-value">${data.gateway || 'Unknown'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">DNS Servers</span>
+                        <span class="info-value">${data.dns_servers || 'Unknown'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">MAC Address</span>
+                        <span class="info-value">${data.mac_address || 'Unknown'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display no connection state
+        function displayNoConnection() {
+            const networkName = document.getElementById('networkName');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const networkInfo = document.getElementById('networkInfo');
+
+            networkName.textContent = 'No Network';
+            connectionStatus.className = 'connection-status status-disconnected';
+            connectionStatus.innerHTML = '<i class="fas fa-times-circle"></i> Not Connected';
+
+            networkInfo.innerHTML = '<div class="no-connection">No WiFi network is currently connected</div>';
+        }
+
+        // Display error state
+        function displayError(message) {
+            const networkInfo = document.getElementById('networkInfo');
+            networkInfo.innerHTML = `<div class="error-state">${message}</div>`;
+        }
+
+        // Generate signal strength bars
+        function generateSignalBars(signalStrength) {
+            const strength = Math.abs(signalStrength || -70);
+            let bars = '';
+            
+            for (let i = 1; i <= 4; i++) {
+                let barClass = 'bar';
+                if (strength > 80) barClass += ' weak';
+                else if (strength > 60) barClass += i <= 2 ? ' medium' : ' weak';
+                else if (strength > 40) barClass += i <= 3 ? ' strong' : ' medium';
+                else barClass += ' strong';
+                
+                bars += `<div class="${barClass}"></div>`;
+            }
+            
+            return bars;
+        }
+
+        // Get security level based on encryption
+        function getSecurityLevel(encryption) {
+            if (!encryption || encryption.toLowerCase() === 'open') {
+                return { class: 'security-low', text: 'Low' };
+            } else if (encryption.includes('WEP') || encryption.includes('WPS')) {
+                return { class: 'security-low', text: 'Low' };
+            } else if (encryption.includes('WPA') || encryption.includes('WPA2')) {
+                return { class: 'security-medium', text: 'Medium' };
+            } else if (encryption.includes('WPA3')) {
+                return { class: 'security-high', text: 'High' };
+            } else {
+                return { class: 'security-medium', text: 'Medium' };
+            }
+        }
+
+        // Refresh network information
+        function refreshNetworkInfo() {
+            loadNetworkInfo();
+        }
+
+        console.log('Current WiFi Network Analysis interface ready');
+    </script>
+</body>
+</html>

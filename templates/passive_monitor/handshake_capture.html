@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Handshake Capture</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 35%, #2c1810 100%);
+            color: #e8e8e8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #ccd6f6;
+            font-size: 32px;
+            font-weight: 300;
+        }
+
+        .back-link {
+            color: #64ffda;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+        }
+
+        .card {
+            background: rgba(15, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            color: #ccd6f6;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .card-icon {
+            margin-right: 12px;
+            color: #64ffda;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-secondary {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .info-text {
+            color: #8892b0;
+            font-style: italic;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .warning-text {
+            background: rgba(251, 133, 0, 0.1);
+            border: 1px solid rgba(251, 133, 0, 0.3);
+            color: #fb8500;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Handshake Capture</h1>
+            <a href="/passive-monitor" class="back-link">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="warning-text">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Admin Access Required:</strong> Handshake capture functionality requires admin permissions.
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-handshake card-icon"></i>
+                    WPA/WPA2/WPA3 Handshake Capture
+                </h3>
+                <button class="btn btn-secondary" onclick="startCapture()">
+                    <i class="fas fa-search"></i>
+                    Capture Handshakes
+                </button>
+            </div>
+            <div class="card-content">
+                <div class="info-text">
+                    Detect and log WPA/WPA2/WPA3 4-way handshakes from nearby clients and access points. 
+                    Essential for security testing and network authentication analysis.
+                    Click "Capture Handshakes" to begin monitoring for authentication handshakes.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startCapture() {
+            alert('Handshake capture functionality will be implemented here.');
+        }
+    </script>
+</body>
+</html>

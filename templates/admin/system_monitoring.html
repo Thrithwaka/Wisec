@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - System Monitor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #ccd6f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            color: #64ffda;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            color: #8892b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #8892b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(83, 62, 232, 0.2);
+            color: #533ee8;
+            border-left: 3px solid #533ee8;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            color: #64ffda;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header-content p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 15px 25px;
+            border-radius: 25px;
+        }
+
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .status-text {
+            color: #00ff88;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* System Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: #ccd6f6;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 10px;
+            color: #64ffda;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #64ffda;
+            margin-bottom: 10px;
+        }
+
+        .metric-subtitle {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(136, 146, 176, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #64ffda, #533ee8);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #ff8c00);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #ff4757, #ff6b7a);
+        }
+
+        .metric-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #8892b0;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: 15px;
+        }
+
+        .chart-container.large {
+            height: 300px;
+        }
+
+        /* Full Width Cards */
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        /* Process List */
+        .process-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .process-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .process-item:hover {
+            background: rgba(100, 255, 218, 0.05);
+            padding-left: 10px;
+        }
+
+        .process-info {
+            flex: 1;
+        }
+
+        .process-name {
+            color: #ccd6f6;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .process-details {
+            color: #8892b0;
+            font-size: 0.8rem;
+        }
+
+        .process-metrics {
+            display: flex;
+            gap: 15px;
+            text-align: right;
+        }
+
+        .process-metric {
+            color: #64ffda;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .process-metric-label {
+            color: #8892b0;
+            font-size: 0.8rem;
+            display: block;
+        }
+
+        /* Alert Cards */
+        .alert-card {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-card.warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-color: rgba(255, 193, 7, 0.3);
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: #ff4757;
+        }
+
+        .alert-icon.warning {
+            color: #ffc107;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            color: #ff4757;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .alert-title.warning {
+            color: #ffc107;
+        }
+
+        .alert-message {
+            color: #8892b0;
+            font-size: 0.9rem;
+        }
+
+        .alert-time {
+            color: #8892b0;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: linear-gradient(135deg, #533ee8, #64ffda);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(83, 62, 232, 0.3);
+        }
+
+        .action-btn.danger {
+            background: linear-gradient(135deg, #ff4757, #ff6b7a);
+        }
+
+        .action-btn.warning {
+            background: linear-gradient(135deg, #ffc107, #ff8c00);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>WISEC</h1>
+                <span>Admin Panel</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.admin_dashboard_simple') }}" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analytics_simple') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.live_monitoring_simple') }}" class="nav-link">
+                        <i class="fas fa-eye"></i>
+                        Live Monitoring
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.security_simple') }}" class="nav-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Security Incidents
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.users_simple') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.approval_requests') }}" class="nav-link">
+                        <i class="fas fa-user-check"></i>
+                        Approval Requests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.system_simple') }}" class="nav-link active">
+                        <i class="fas fa-server"></i>
+                        System Monitor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        Back to Main
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header animate__animated animate__fadeInDown">
+                <div class="header-content">
+                    <h1><i class="fas fa-server"></i> System Monitor</h1>
+                    <p>Real-time system performance and resource monitoring</p>
+                </div>
+                <div class="system-status">
+                    <div class="status-indicator" id="status-indicator"></div>
+                    <div class="status-text" id="status-text">System Operational</div>
+                </div>
+            </header>
+
+            <!-- System Metrics Grid -->
+            <div class="metrics-grid">
+                <!-- CPU Usage -->
+                <div class="metric-card animate__animated animate__fadeInUp">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-microchip"></i>
+                            CPU Usage
+                        </div>
+                    </div>
+                    <div class="metric-value" id="cpu-usage">{{ system_stats.cpu_usage or 0 }}%</div>
+                    <div class="metric-subtitle">Current processor utilization</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="cpu-progress" style="width: {{ system_stats.cpu_usage or 0 }}%;"></div>
+                    </div>
+                    <div class="metric-details">
+                        <span>Cores: <span id="cpu-cores">{{ system_stats.cpu_cores or 'N/A' }}</span></span>
+                        <span>Freq: <span id="cpu-freq">{{ system_stats.cpu_frequency or 'N/A' }}</span> GHz</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Memory Usage -->
+                <div class="metric-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-memory"></i>
+                            Memory Usage
+                        </div>
+                    </div>
+                    <div class="metric-value" id="memory-usage">{{ system_stats.memory_usage or 0 }}%</div>
+                    <div class="metric-subtitle">RAM utilization</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="memory-progress" style="width: {{ system_stats.memory_usage or 0 }}%;"></div>
+                    </div>
+                    <div class="metric-details">
+                        <span>Used: <span id="memory-used">{{ system_stats.memory_used or 'N/A' }}</span> GB</span>
+                        <span>Total: <span id="memory-total">{{ system_stats.memory_total or 'N/A' }}</span> GB</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Disk Usage -->
+                <div class="metric-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-hdd"></i>
+                            Disk Usage
+                        </div>
+                    </div>
+                    <div class="metric-value" id="disk-usage">{{ system_stats.disk_usage or 0 }}%</div>
+                    <div class="metric-subtitle">Storage utilization</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="disk-progress" style="width: {{ system_stats.disk_usage or 0 }}%;"></div>
+                    </div>
+                    <div class="metric-details">
+                        <span>Used: <span id="disk-used">{{ system_stats.disk_used or 'N/A' }}</span> GB</span>
+                        <span>Free: <span id="disk-free">{{ system_stats.disk_free or 'N/A' }}</span> GB</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="diskChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Network Activity -->
+                <div class="metric-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-network-wired"></i>
+                            Network Activity
+                        </div>
+                    </div>
+                    <div class="metric-value" id="network-activity">{{ system_stats.network_activity or 0 }} MB/s</div>
+                    <div class="metric-subtitle">Current network throughput</div>
+                    <div class="metric-details" style="margin-top: 15px;">
+                        <span>↓ Down: <span id="network-down">{{ system_stats.network_down or 'N/A' }}</span> MB/s</span>
+                        <span>↑ Up: <span id="network-up">{{ system_stats.network_up or 'N/A' }}</span> MB/s</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="networkChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- System Temperature -->
+                <div class="metric-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-thermometer-half"></i>
+                            System Temperature
+                        </div>
+                    </div>
+                    <div class="metric-value" id="system-temp">{{ system_stats.temperature or 'N/A' }}°C</div>
+                    <div class="metric-subtitle">CPU temperature</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="temp-progress" style="width: {{ (system_stats.temperature or 0) * 100 / 100 }}%;"></div>
+                    </div>
+                    <div class="metric-details">
+                        <span>Status: <span id="temp-status">{{ system_stats.temp_status or 'Normal' }}</span></span>
+                        <span>Max: <span id="temp-max">{{ system_stats.temp_max or 'N/A' }}</span>°C</span>
+                    </div>
+                </div>
+
+                <!-- AI Models Status -->
+                <div class="metric-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-brain"></i>
+                            AI Models Status
+                        </div>
+                    </div>
+                    <div class="metric-value" id="ai-models-loaded">{{ system_stats.ai_models_loaded or 0 }}/{{ system_stats.ai_models_total or 0 }}</div>
+                    <div class="metric-subtitle">Models loaded successfully</div>
+                    <div class="metric-details" style="margin-top: 15px;">
+                        <span>Memory: <span id="ai-memory-usage">{{ system_stats.ai_memory_usage or 'N/A' }}</span> MB</span>
+                        <span>Active: <span id="ai-active-models">{{ system_stats.ai_active_models or 0 }}</span></span>
+                    </div>
+                </div>
+
+                <!-- Active Processes -->
+                <div class="metric-card full-width-card animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-tasks"></i>
+                            Active Processes
+                        </div>
+                        <button class="action-btn" onclick="refreshProcesses()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="process-list" id="process-list">
+                        {% if processes %}
+                            {% for process in processes %}
+                            <div class="process-item">
+                                <div class="process-info">
+                                    <div class="process-name">{{ process.name }}</div>
+                                    <div class="process-details">PID: {{ process.pid }} | Status: {{ process.status }}</div>
+                                </div>
+                                <div class="process-metrics">
+                                    <div>
+                                        <span class="process-metric">{{ process.cpu_percent }}%</span>
+                                        <span class="process-metric-label">CPU</span>
+                                    </div>
+                                    <div>
+                                        <span class="process-metric">{{ process.memory_mb }} MB</span>
+                                        <span class="process-metric-label">Memory</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="process-item">
+                                <div class="process-info">
+                                    <div class="process-name">No process data available</div>
+                                    <div class="process-details">System monitoring initializing...</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- System Performance Chart -->
+                <div class="metric-card full-width-card animate__animated animate__fadeInUp" style="animation-delay: 0.7s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-area"></i>
+                            System Performance History
+                        </div>
+                        <div>
+                            <select id="performance-timeframe" class="action-btn" onchange="updatePerformanceChart()" style="background: rgba(83, 62, 232, 0.2); font-size: 0.8rem;">
+                                <option value="1h">Last Hour</option>
+                                <option value="6h">Last 6 Hours</option>
+                                <option value="24h">Last 24 Hours</option>
+                                <option value="7d">Last 7 Days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container large">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- System Alerts -->
+                <div class="metric-card full-width-card animate__animated animate__fadeInUp" style="animation-delay: 0.8s;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            System Alerts
+                        </div>
+                        <button class="action-btn" onclick="clearAlerts()">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                    <div id="system-alerts">
+                        {% if system_alerts %}
+                            {% for alert in system_alerts %}
+                            <div class="alert-card {{ 'warning' if alert.level == 'warning' else '' }}">
+                                <div class="alert-icon {{ 'warning' if alert.level == 'warning' else '' }}">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if alert.level == 'warning' else 'exclamation-circle' }}"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title {{ 'warning' if alert.level == 'warning' else '' }}">{{ alert.title }}</div>
+                                    <div class="alert-message">{{ alert.message }}</div>
+                                </div>
+                                <div class="alert-time">{{ alert.timestamp.strftime('%H:%M:%S') }}</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert-card" style="background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.3);">
+                                <div class="alert-icon" style="color: #00ff88;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title" style="color: #00ff88;">All Systems Normal</div>
+                                    <div class="alert-message">No system alerts detected</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart instances
+        let cpuChart, memoryChart, diskChart, networkChart, performanceChart;
+
+        // Initialize all charts
+        function initializeCharts() {
+            // CPU Chart
+            const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+            cpuChart = new Chart(cpuCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU %',
+                        data: [],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { 
+                            display: false
+                        },
+                        y: { 
+                            display: false,
+                            min: 0,
+                            max: 100
+                        }
+                    },
+                    elements: {
+                        point: { radius: 0 }
+                    }
+                }
+            });
+
+            // Memory Chart
+            const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+            memoryChart = new Chart(memoryCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Memory %',
+                        data: [],
+                        borderColor: '#533ee8',
+                        backgroundColor: 'rgba(83, 62, 232, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            display: false,
+                            min: 0,
+                            max: 100
+                        }
+                    },
+                    elements: {
+                        point: { radius: 0 }
+                    }
+                }
+            });
+
+            // Disk Chart
+            const diskCtx = document.getElementById('diskChart').getContext('2d');
+            diskChart = new Chart(diskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used', 'Free'],
+                    datasets: [{
+                        data: [70, 30],
+                        backgroundColor: ['#64ffda', 'rgba(136, 146, 176, 0.2)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Network Chart
+            const networkCtx = document.getElementById('networkChart').getContext('2d');
+            networkChart = new Chart(networkCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Download',
+                            data: [],
+                            borderColor: '#64ffda',
+                            backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Upload',
+                            data: [],
+                            borderColor: '#533ee8',
+                            backgroundColor: 'rgba(83, 62, 232, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    elements: {
+                        point: { radius: 0 }
+                    }
+                }
+            });
+
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'CPU Usage',
+                            data: [],
+                            borderColor: '#64ffda',
+                            backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Memory Usage',
+                            data: [],
+                            borderColor: '#533ee8',
+                            backgroundColor: 'rgba(83, 62, 232, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Disk Usage',
+                            data: [],
+                            borderColor: '#ff4757',
+                            backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ccd6f6' }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: '#8892b0' },
+                            grid: { color: 'rgba(100, 255, 218, 0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: '#8892b0' },
+                            grid: { color: 'rgba(100, 255, 218, 0.1)' },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load system data
+        function loadSystemData() {
+            fetch('/admin/system/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemMetrics(data.metrics);
+                        updateCharts(data.metrics);
+                    }
+                })
+                .catch(error => console.error('Error loading system data:', error));
+        }
+
+        function updateSystemMetrics(metrics) {
+            // Update CPU
+            document.getElementById('cpu-usage').textContent = metrics.cpu_usage + '%';
+            document.getElementById('cpu-cores').textContent = metrics.cpu_cores || 'N/A';
+            document.getElementById('cpu-freq').textContent = (metrics.cpu_frequency || 'N/A') + ' GHz';
+            updateProgressBar('cpu-progress', metrics.cpu_usage);
+
+            // Update Memory
+            document.getElementById('memory-usage').textContent = metrics.memory_usage + '%';
+            document.getElementById('memory-used').textContent = metrics.memory_used + ' GB';
+            document.getElementById('memory-total').textContent = metrics.memory_total + ' GB';
+            updateProgressBar('memory-progress', metrics.memory_usage);
+
+            // Update Disk
+            document.getElementById('disk-usage').textContent = metrics.disk_usage + '%';
+            document.getElementById('disk-used').textContent = metrics.disk_used + ' GB';
+            document.getElementById('disk-free').textContent = metrics.disk_free + ' GB';
+            updateProgressBar('disk-progress', metrics.disk_usage);
+
+            // Update Network
+            document.getElementById('network-activity').textContent = metrics.network_total + ' MB/s';
+            document.getElementById('network-down').textContent = metrics.network_down + ' MB/s';
+            document.getElementById('network-up').textContent = metrics.network_up + ' MB/s';
+
+            // Update Temperature
+            document.getElementById('system-temp').textContent = (metrics.temperature || 'N/A') + '°C';
+            document.getElementById('temp-status').textContent = metrics.temp_status || 'Normal';
+            document.getElementById('temp-max').textContent = (metrics.temp_max || 'N/A') + '°C';
+            if (metrics.temperature) {
+                updateProgressBar('temp-progress', (metrics.temperature * 100) / 100);
+            }
+
+            // Update AI Models
+            document.getElementById('ai-models-loaded').textContent = 
+                `${metrics.ai_models_loaded || 0}/${metrics.ai_models_total || 0}`;
+            document.getElementById('ai-memory-usage').textContent = (metrics.ai_memory_usage || 'N/A') + ' MB';
+            document.getElementById('ai-active-models').textContent = metrics.ai_active_models || 0;
+
+            // Update system status
+            updateSystemStatus(metrics);
+        }
+
+        function updateProgressBar(id, percentage) {
+            const progressBar = document.getElementById(id);
+            progressBar.style.width = percentage + '%';
+            
+            // Change color based on usage
+            progressBar.className = 'progress-fill';
+            if (percentage > 80) {
+                progressBar.classList.add('danger');
+            } else if (percentage > 60) {
+                progressBar.classList.add('warning');
+            }
+        }
+
+        function updateSystemStatus(metrics) {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            const avgUsage = (metrics.cpu_usage + metrics.memory_usage + metrics.disk_usage) / 3;
+            
+            if (avgUsage > 80) {
+                statusIndicator.style.background = '#ff4757';
+                statusText.textContent = 'System Under Load';
+                statusText.style.color = '#ff4757';
+            } else if (avgUsage > 60) {
+                statusIndicator.style.background = '#ffc107';
+                statusText.textContent = 'System Busy';
+                statusText.style.color = '#ffc107';
+            } else {
+                statusIndicator.style.background = '#00ff88';
+                statusText.textContent = 'System Operational';
+                statusText.style.color = '#00ff88';
+            }
+        }
+
+        function updateCharts(metrics) {
+            const now = new Date().toLocaleTimeString();
+            
+            // Update CPU Chart
+            if (cpuChart.data.labels.length > 20) {
+                cpuChart.data.labels.shift();
+                cpuChart.data.datasets[0].data.shift();
+            }
+            cpuChart.data.labels.push(now);
+            cpuChart.data.datasets[0].data.push(metrics.cpu_usage);
+            cpuChart.update('none');
+
+            // Update Memory Chart
+            if (memoryChart.data.labels.length > 20) {
+                memoryChart.data.labels.shift();
+                memoryChart.data.datasets[0].data.shift();
+            }
+            memoryChart.data.labels.push(now);
+            memoryChart.data.datasets[0].data.push(metrics.memory_usage);
+            memoryChart.update('none');
+
+            // Update Disk Chart
+            diskChart.data.datasets[0].data = [metrics.disk_usage, 100 - metrics.disk_usage];
+            diskChart.update('none');
+
+            // Update Network Chart
+            if (networkChart.data.labels.length > 20) {
+                networkChart.data.labels.shift();
+                networkChart.data.datasets[0].data.shift();
+                networkChart.data.datasets[1].data.shift();
+            }
+            networkChart.data.labels.push(now);
+            networkChart.data.datasets[0].data.push(metrics.network_down);
+            networkChart.data.datasets[1].data.push(metrics.network_up);
+            networkChart.update('none');
+
+            // Update Performance Chart
+            if (performanceChart.data.labels.length > 50) {
+                performanceChart.data.labels.shift();
+                performanceChart.data.datasets[0].data.shift();
+                performanceChart.data.datasets[1].data.shift();
+                performanceChart.data.datasets[2].data.shift();
+            }
+            performanceChart.data.labels.push(now);
+            performanceChart.data.datasets[0].data.push(metrics.cpu_usage);
+            performanceChart.data.datasets[1].data.push(metrics.memory_usage);
+            performanceChart.data.datasets[2].data.push(metrics.disk_usage);
+            performanceChart.update('none');
+        }
+
+        function refreshProcesses() {
+            fetch('/admin/system/processes')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateProcessList(data.processes);
+                    }
+                })
+                .catch(error => console.error('Error refreshing processes:', error));
+        }
+
+        function updateProcessList(processes) {
+            const container = document.getElementById('process-list');
+            container.innerHTML = '';
+            
+            if (processes.length === 0) {
+                container.innerHTML = `
+                    <div class="process-item">
+                        <div class="process-info">
+                            <div class="process-name">No process data available</div>
+                            <div class="process-details">System monitoring initializing...</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            processes.forEach(process => {
+                const processElement = document.createElement('div');
+                processElement.className = 'process-item';
+                processElement.innerHTML = `
+                    <div class="process-info">
+                        <div class="process-name">${process.name}</div>
+                        <div class="process-details">PID: ${process.pid} | Status: ${process.status}</div>
+                    </div>
+                    <div class="process-metrics">
+                        <div>
+                            <span class="process-metric">${process.cpu_percent}%</span>
+                            <span class="process-metric-label">CPU</span>
+                        </div>
+                        <div>
+                            <span class="process-metric">${process.memory_mb} MB</span>
+                            <span class="process-metric-label">Memory</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(processElement);
+            });
+        }
+
+        function updatePerformanceChart() {
+            const timeframe = document.getElementById('performance-timeframe').value;
+            
+            fetch(`/admin/system/performance-history?timeframe=${timeframe}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        performanceChart.data.labels = data.labels;
+                        performanceChart.data.datasets[0].data = data.cpu_data;
+                        performanceChart.data.datasets[1].data = data.memory_data;
+                        performanceChart.data.datasets[2].data = data.disk_data;
+                        performanceChart.update();
+                    }
+                })
+                .catch(error => console.error('Error updating performance chart:', error));
+        }
+
+        function clearAlerts() {
+            if (confirm('Are you sure you want to clear all system alerts?')) {
+                fetch('/admin/system/clear-alerts', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('system-alerts').innerHTML = `
+                            <div class="alert-card" style="background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.3);">
+                                <div class="alert-icon" style="color: #00ff88;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title" style="color: #00ff88;">All Systems Normal</div>
+                                    <div class="alert-message">No system alerts detected</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => console.error('Error clearing alerts:', error));
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadSystemData();
+            
+            // Auto-refresh every 5 seconds
+            setInterval(loadSystemData, 5000);
+        });
+
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: rgba(100, 255, 218, 0.2);
+                border: 1px solid rgba(100, 255, 218, 0.3);
+                color: #64ffda;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                display: none;
+            `;
+            
+            if (window.innerWidth <= 768) {
+                toggleBtn.style.display = 'block';
+                document.body.appendChild(toggleBtn);
+                
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

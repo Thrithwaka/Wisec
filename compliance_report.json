@@ -1,0 +1,20 @@
+{
+  "verification_date": "2025-08-19T23:53:02.062237",
+  "compliance_status": "COMPLIANT",
+  "total_issues": 0,
+  "issues": [],
+  "available_models": [
+    "cnn",
+    "cnn_final",
+    "lstm",
+    "lstm_main",
+    "lstm_production",
+    "gnn",
+    "cnn_lstm_hybrid",
+    "random_forest",
+    "gradient_boosting",
+    "crypto_bert",
+    "ensemble"
+  ],
+  "model_count": 11
+}

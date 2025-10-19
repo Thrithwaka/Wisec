@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - WISEC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #ccd6f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(15, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .icon {
+            font-size: 64px;
+            color: #64ffda;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #ccd6f6;
+            margin-bottom: 20px;
+        }
+        .message {
+            color: #8892b0;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #533ee8 0%, #6c5ce7 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(83, 62, 232, 0.4);
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <i class="fas fa-signal"></i>
+        </div>
+        <h1>{{ title }}</h1>
+        <p class="message">{{ message }}</p>
+        <div>
+            <a href="/dashboard" class="btn">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+            <a href="/current-wifi" class="btn">
+                <i class="fas fa-wifi"></i>
+                Current WiFi
+            </a>
+        </div>
+    </div>
+</body>
+</html>

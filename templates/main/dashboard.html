@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISEC - Security Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 35%, #2c1810 100%);
+            color: #e8e8e8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo h1 {
+            color: #64ffda;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            color: #8892b0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #8892b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(83, 62, 232, 0.2);
+            color: #533ee8;
+            border-left: 3px solid #533ee8;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-section {
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+
+        .nav-section-title {
+            color: #64ffda;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .admin-only {
+            opacity: 0.7;
+        }
+
+        .admin-only:hover {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .header h2 {
+            color: #ccd6f6;
+            font-size: 32px;
+            font-weight: 300;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: 10px;
+            padding-left: 15px;
+            border-left: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .user-welcome {
+            color: #8892b0;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .signout-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, rgba(248, 81, 73, 0.1) 0%, rgba(220, 53, 69, 0.1) 100%);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .signout-button:hover {
+            background: linear-gradient(135deg, rgba(248, 81, 73, 0.2) 0%, rgba(220, 53, 69, 0.2) 100%);
+            border-color: rgba(248, 81, 73, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(248, 81, 73, 0.2);
+        }
+
+        .signout-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(248, 81, 73, 0.2);
+        }
+
+        .signout-button i {
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: rgba(46, 160, 67, 0.2);
+            color: #2ea043;
+            border: 1px solid rgba(46, 160, 67, 0.3);
+        }
+
+        .status-offline {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .status-indicator i {
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .refresh-button {
+            background: rgba(83, 62, 232, 0.2);
+            border: 1px solid rgba(83, 62, 232, 0.3);
+            color: #533ee8;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-button:hover {
+            background: rgba(83, 62, 232, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(15, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(100, 255, 218, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            color: #ccd6f6;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .card-icon {
+            margin-right: 12px;
+            color: #64ffda;
+        }
+
+        .card-content {
+            padding: 20px;
+            min-height: 120px;
+        }
+
+        /* WiFi Status Styles */
+        .wifi-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .wifi-info h3 {
+            color: #64ffda;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .wifi-details {
+            color: #8892b0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .wifi-details div {
+            margin-bottom: 4px;
+        }
+
+        .signal-strength {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .signal-bars {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 4px;
+            background: #3a4553;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .bar:nth-child(1) { height: 10px; }
+        .bar:nth-child(2) { height: 15px; }
+        .bar:nth-child(3) { height: 20px; }
+        .bar:nth-child(4) { height: 25px; }
+
+        .bar.strong { background: #2ea043; }
+        .bar.medium { background: #fb8500; }
+        .bar.weak { background: #f85149; }
+
+        /* Risk Summary Styles */
+        .risk-summary {
+            text-align: center;
+        }
+
+        .risk-level {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .risk-normal { background: rgba(46, 160, 67, 0.2); color: #2ea043; }
+        .risk-low { background: rgba(251, 133, 0, 0.2); color: #fb8500; }
+        .risk-medium { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
+        .risk-high { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        .risk-critical { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .risk-no-data { background: rgba(136, 146, 176, 0.2); color: #8892b0; }
+        .risk-error { background: rgba(255, 0, 0, 0.2); color: #ff0000; }
+
+        .risk-description {
+            color: #8892b0;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #64ffda;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #8892b0;
+            margin-top: 4px;
+        }
+
+        /* Scan History Styles */
+        .scan-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .scan-item:last-child {
+            border-bottom: none;
+        }
+
+        .scan-info {
+            flex: 1;
+        }
+
+        .scan-timestamp {
+            color: #64ffda;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .scan-details {
+            color: #8892b0;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .risk-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-normal { background: rgba(46, 160, 67, 0.2); color: #2ea043; }
+        .badge-low { background: rgba(251, 133, 0, 0.2); color: #fb8500; }
+        .badge-high { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        .badge-critical { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        /* Notifications Styles */
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 3px solid;
+        }
+
+        .notification-high { 
+            background: rgba(248, 81, 73, 0.1); 
+            border-left-color: #f85149;
+        }
+
+        .notification-medium { 
+            background: rgba(251, 133, 0, 0.1); 
+            border-left-color: #fb8500;
+        }
+
+        .notification-low { 
+            background: rgba(46, 160, 67, 0.1); 
+            border-left-color: #2ea043;
+        }
+
+        .notification-item i {
+            margin-right: 12px;
+            margin-top: 2px;
+            color: inherit;
+        }
+
+        /* Enhanced notification styles */
+        .notification-item:hover {
+            background: rgba(100, 255, 218, 0.08);
+            transform: translateX(2px);
+            transition: all 0.3s ease;
+        }
+
+        .notification-icon {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+
+        .notification-high .notification-icon {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+
+        .notification-medium .notification-icon {
+            background: rgba(251, 133, 0, 0.2);
+            color: #fb8500;
+        }
+
+        .notification-low .notification-icon {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-message {
+            color: #ccd6f6;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .notification-details {
+            color: #8892b0;
+            font-size: 12px;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            opacity: 0.9;
+        }
+
+        .notification-time {
+            color: #8892b0;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0.8;
+        }
+
+        .notification-badge {
+            flex-shrink: 0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .notification-badge-high {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .notification-badge-medium {
+            background: rgba(251, 133, 0, 0.2);
+            color: #fb8500;
+            border: 1px solid rgba(251, 133, 0, 0.3);
+        }
+
+        .notification-badge-low {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+
+        .notification-footer {
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+            margin-top: 5px;
+        }
+
+        /* Clear Notifications Button */
+        .clear-notifications-btn {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-notifications-btn:hover {
+            background: rgba(248, 113, 113, 0.3);
+            border-color: rgba(248, 113, 113, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
+        }
+
+        .clear-notifications-btn:active {
+            transform: translateY(0);
+        }
+
+        .clear-notifications-btn i {
+            font-size: 11px;
+        }
+
+        .clear-notifications-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .clear-notifications-btn:disabled:hover {
+            background: rgba(248, 113, 113, 0.2);
+            border-color: rgba(248, 113, 113, 0.3);
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Model Status Styles */
+        .model-status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .model-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(26, 31, 46, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .model-name {
+            color: #ccd6f6;
+            font-weight: 500;
+        }
+
+        .model-health {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .health-healthy { background: rgba(46, 160, 67, 0.2); color: #2ea043; }
+        .health-degraded { background: rgba(251, 133, 0, 0.2); color: #fb8500; }
+        .health-error { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        .health-not_loaded { background: rgba(136, 146, 176, 0.2); color: #8892b0; }
+        .health-partial { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .health-critical { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .health-unknown { background: rgba(136, 146, 176, 0.2); color: #8892b0; }
+
+        /* Model Status Summary */
+        .model-summary {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .model-overall-status {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .model-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+
+        .model-recommendation {
+            color: #8892b0;
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #533ee8 0%, #6c5ce7 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(83, 62, 232, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(83, 62, 232, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Loading and Error States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80px;
+            color: #8892b0;
+        }
+
+        .loading:before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            border-top: 2px solid #64ffda;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #8892b0;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .error-state {
+            text-align: center;
+            color: #f85149;
+            padding: 40px;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .user-actions {
+                border-left: none;
+                border-top: 1px solid rgba(100, 255, 218, 0.2);
+                padding-left: 0;
+                padding-top: 10px;
+                margin-left: 0;
+            }
+
+            .user-welcome {
+                display: none;
+            }
+
+            .signout-button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1>WISEC</h1>
+                <span>Security Dashboard</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link active">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/deep-scan" class="nav-link">
+                        <i class="fas fa-search"></i>
+                        Deep Scan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/scan-history" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        Scan History
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/network-topology" class="nav-link">
+                        <i class="fas fa-project-diagram"></i>
+                        Network Topology
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Advanced Features Section - Requires Admin Approval -->
+            <div class="nav-section">
+                <div class="nav-section-title">Advanced Features</div>
+                <ul class="nav-menu">
+                    {% if current_user.is_authenticated %}
+                        <!-- Check if user has advanced access approved by admin -->
+                        {% if (user_access and user_access.has_access and user_access.can_use) or (current_user.role.value == 'admin') %}
+                            <!-- User has approved access - show all advanced features -->
+                            <li class="nav-item">
+                                <a href="{{ url_for('main.advanced_scanner') }}" class="nav-link">
+                                    <i class="fas fa-star"></i>
+                                    Advanced Dashboard
+                                    <span class="nav-badge" style="background: #4ade80;">ACTIVE</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor" class="nav-link">
+                                    <i class="fas fa-eye"></i>
+                                    Monitor Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor/traffic-capture" class="nav-link">
+                                    <i class="fas fa-network-wired"></i>
+                                    Traffic Capture
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor/beacon-analysis" class="nav-link">
+                                    <i class="fas fa-broadcast-tower"></i>
+                                    Beacon Analysis
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor/rogue-detector" class="nav-link">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Rogue AP Detection
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor/handshake-capture" class="nav-link admin-only">
+                                    <i class="fas fa-handshake"></i>
+                                    Handshake Capture
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor/deauth-monitor" class="nav-link">
+                                    <i class="fas fa-ban"></i>
+                                    Deauth Monitor
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/passive-monitor/security-audit" class="nav-link">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    Security Audit
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/wifi/advanced-scanner" class="nav-link">
+                                    <i class="fas fa-satellite-dish"></i>
+                                    Advanced Scanner
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/ai/model-selector" class="nav-link">
+                                    <i class="fas fa-brain"></i>
+                                    AI Models
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/wifi/channel-analysis" class="nav-link">
+                                    <i class="fas fa-chart-bar"></i>
+                                    Channel Analysis
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/wifi/signal-monitor" class="nav-link">
+                                    <i class="fas fa-signal"></i>
+                                    Signal Monitor
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/vulnerability/deep-analysis" class="nav-link">
+                                    <i class="fas fa-shield-alt"></i>
+                                    Deep Analysis
+                                </a>
+                            </li>
+                        {% elif current_user.role.value != 'admin' %}
+                            <!-- Regular user doesn't have access - show request option -->
+                            <li class="nav-item">
+                                <a href="/request-advanced-access" class="nav-link" style="border: 1px solid rgba(251, 191, 36, 0.5); background: rgba(251, 191, 36, 0.1);">
+                                    <i class="fas fa-lock"></i>
+                                    Request Access
+                                    <span class="nav-badge" style="background: #fbbf24;">LOCKED</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                                    <i class="fas fa-network-wired"></i>
+                                    Traffic Capture
+                                    <i class="fas fa-lock" style="margin-left: auto; font-size: 12px;"></i>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                                    <i class="fas fa-satellite-dish"></i>
+                                    Advanced Scanner
+                                    <i class="fas fa-lock" style="margin-left: auto; font-size: 12px;"></i>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                                    <i class="fas fa-brain"></i>
+                                    AI Models
+                                    <i class="fas fa-lock" style="margin-left: auto; font-size: 12px;"></i>
+                                </div>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Admin Panel Section - Only visible to actual admin role users -->
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <div class="nav-section">
+                <div class="nav-section-title">Administration</div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin.admin_dashboard_simple') }}" class="nav-link admin-only">
+                            <i class="fas fa-shield-alt"></i>
+                            Admin Dashboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h2>Security Dashboard</h2>
+                <div class="user-info">
+                    <div class="status-indicator status-online" id="connectionStatus">
+                        <i class="fas fa-circle"></i>
+                        <span>Online</span>
+                    </div>
+                    <button class="refresh-button" onclick="refreshDashboard()" title="Refresh Dashboard">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                    </button>
+                    <div class="user-actions">
+                        <span class="user-welcome">
+                            Welcome, {% if current_user.is_authenticated %}{{ current_user.email.split('@')[0] }}{% else %}User{% endif %}
+                            {% if current_user.is_authenticated and current_user.is_admin() %}<span style="color: #64ffda; font-weight: bold;">(Admin)</span>{% endif %}
+                        </span>
+                        <button class="signout-button" onclick="signOut()" title="Sign Out">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Current WiFi Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-wifi card-icon"></i>
+                            Current WiFi Status
+                        </h3>
+                    </div>
+                    <div class="card-content" id="wifiStatusContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Risk Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-shield-alt card-icon"></i>
+                            Risk Summary
+                        </h3>
+                    </div>
+                    <div class="card-content" id="riskSummaryContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Recent Scans -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-search card-icon"></i>
+                            Recent Scans
+                        </h3>
+                    </div>
+                    <div class="card-content" id="recentScansContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- System Notifications -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bell card-icon"></i>
+                            System Notifications
+                        </h3>
+                        <button class="clear-notifications-btn" id="clearNotificationsBtn" onclick="clearAllNotifications()" title="Clear all notifications" style="display: none;">
+                            <i class="fas fa-broom"></i>
+                            Clear All
+                        </button>
+                    </div>
+                    <div class="card-content" id="notificationsContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+
+                <!-- AI Model Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-brain card-icon"></i>
+                            AI Model Status
+                        </h3>
+                    </div>
+                    <div class="card-content" id="modelStatusContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/deep-scan" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Start Deep Scan
+                </a>
+                <button onclick="performQuickScan()" class="btn btn-secondary">
+                    <i class="fas fa-bolt"></i>
+                    Quick Scan
+                </button>
+                <a href="/network-topology" class="btn btn-secondary">
+                    <i class="fas fa-project-diagram"></i>
+                    View Topology
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard data and state management
+        let dashboardData = {};
+        let refreshInterval;
+        let isLoading = false;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard initializing...');
+            loadDashboardData();
+            startAutoRefresh();
+        });
+
+        // Load dashboard data with proper error handling
+        async function loadDashboardData() {
+            if (isLoading) return;
+            isLoading = true;
+
+            try {
+                console.log('Loading dashboard data...');
+                
+                // Update connection status first
+                updateConnectionStatus();
+
+                // Try to load individual components with fallbacks
+                await Promise.allSettled([
+                    loadCurrentWiFiStatus(),
+                    loadRiskSummary(),
+                    loadRecentScans(),
+                    loadNotifications(),
+                    loadModelStatus()
+                ]);
+
+                console.log('Dashboard data loaded successfully');
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showGlobalError('Failed to load dashboard data');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Load Current WiFi Status
+        async function loadCurrentWiFiStatus() {
+            const content = document.getElementById('wifiStatusContent');
+            
+            try {
+                console.log('Loading WiFi status...');
+                
+                let response = await fetch('/current-wifi', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok && response.status !== 500) {
+                    response = await fetch('/api/wifi/current', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                }
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('WiFi data received:', data);
+                    
+                    let wifiData = data;
+                    if (data.success && data.data) {
+                        wifiData = { ...data.data, connected: data.connected };
+                    }
+                    
+                    // Check if actually connected with valid SSID
+                    if (wifiData.connected && wifiData.ssid) {
+                        console.log(`Connected to: ${wifiData.ssid}`);
+                        updateWiFiStatus(wifiData);
+                    } else {
+                        console.log('WiFi disconnected or no SSID');
+                        updateWiFiStatus({ 
+                            connected: false, 
+                            ssid: null,
+                            status: 'disconnected',
+                            message: 'WiFi Disconnected' 
+                        });
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error('WiFi status error:', error);
+                updateWiFiStatus({ 
+                    connected: false, 
+                    error: error.message,
+                    message: 'Unable to load WiFi status' 
+                });
+            }
+        }
+
+        // Load Risk Summary with WiFi-based Analysis
+        async function loadRiskSummary() {
+            try {
+                // First check WiFi status to avoid analysis when disconnected
+                const wifiCheck = await fetch('/current-wifi', { 
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-cache'
+                });
+                
+                let isWifiConnected = false;
+                let currentSSID = null;
+                
+                if (wifiCheck.ok) {
+                    const wifiData = await wifiCheck.json();
+                    isWifiConnected = wifiData.connected && wifiData.ssid;
+                    currentSSID = wifiData.ssid;
+                    console.log('WiFi check for risk analysis:', { connected: isWifiConnected, ssid: currentSSID });
+                }
+                
+                if (!isWifiConnected) {
+                    // Show disconnected state immediately
+                    updateRiskSummary({
+                        overall_risk: 'NO_CONNECTION',
+                        threat_count: 1,
+                        detected_threats: ['No WiFi connection - connect to a network to analyze security'],
+                        confidence: 0,
+                        prediction_class: 'NO_WIFI_CONNECTION',
+                        network_name: 'Not Connected',
+                        analysis_timestamp: new Date().toISOString(),
+                        last_scan: null,
+                        data_source: 'no_connection'
+                    });
+                    return;
+                }
+                
+                // Load both user status and WiFi risk analysis
+                const [statusResponse, riskResponse] = await Promise.all([
+                    fetch('/api/user-status', { headers: { 'Accept': 'application/json' } }),
+                    fetch('/api/risk-analysis', { headers: { 'Accept': 'application/json' } })
+                ]);
+                
+                let basicRisk = { overall_risk: 'UNKNOWN', threat_count: 0 };
+                let wifiAnalysis = null;
+                
+                if (statusResponse.ok) {
+                    const statusData = await statusResponse.json();
+                    basicRisk = statusData.risk_summary || basicRisk;
+                }
+                
+                if (riskResponse.ok) {
+                    const riskData = await riskResponse.json();
+                    let rawAnalysis = riskData.risk_analysis || null;
+                    
+                    // Map backend field names to frontend expected names
+                    if (rawAnalysis) {
+                        wifiAnalysis = {
+                            overall_risk: rawAnalysis.overall_risk_level,
+                            threat_count: rawAnalysis.threat_count,
+                            detected_threats: rawAnalysis.threat_predictions,
+                            confidence: rawAnalysis.confidence_score,
+                            prediction_class: rawAnalysis.prediction_class,
+                            network_name: rawAnalysis.network_name,
+                            analysis_timestamp: rawAnalysis.analysis_timestamp,
+                            data_source: rawAnalysis.data_source,
+                            ai_analysis: rawAnalysis.ai_analysis,
+                            last_scan: rawAnalysis.analysis_timestamp
+                        };
+                    }
+                }
+                
+                // Use WiFi analysis if available, otherwise fall back to basic risk data
+                const finalRiskData = wifiAnalysis || basicRisk;
+                
+                updateRiskSummary(finalRiskData);
+            } catch (error) {
+                console.error('Risk summary error:', error);
+                updateRiskSummary({ overall_risk: 'ERROR', threat_count: 0 });
+            }
+        }
+
+        // Load Recent Scans
+        async function loadRecentScans() {
+            const content = document.getElementById('recentScansContent');
+            
+            try {
+                console.log('Loading recent scans...');
+                
+                let response = await fetch('/api/recent-scans', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                let scansData = [];
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        scansData = data.scans || [];
+                    }
+                } else {
+                    console.log('API endpoint failed, trying scan-history extraction...');
+                    
+                    response = await fetch('/scan-history?limit=5', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'text/html,application/xhtml+xml',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const htmlText = await response.text();
+                        scansData = extractScansFromHTML(htmlText);
+                    }
+                }
+
+                console.log('Recent scans data:', scansData);
+                updateRecentScans(scansData);
+
+            } catch (error) {
+                console.error('Recent scans error:', error);
+                updateRecentScans([]);
+            }
+        }
+
+        // Extract scan data from HTML response (fallback method)
+        function extractScansFromHTML(htmlText) {
+            try {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlText;
+                
+                const scanRows = tempDiv.querySelectorAll('tr[data-scan-id], .scan-item, .scan-row');
+                const scans = [];
+                
+                scanRows.forEach(row => {
+                    try {
+                        const scanId = row.getAttribute('data-scan-id') || 'unknown';
+                        const timestampElement = row.querySelector('.timestamp, .scan-timestamp, td:nth-child(2)');
+                        const riskElement = row.querySelector('.risk-level, .badge, td:nth-child(4)');
+                        const networkElement = row.querySelector('.network-name, td:nth-child(3)');
+                        const statusElement = row.querySelector('.status, td:nth-child(5)');
+                        
+                        const scan = {
+                            scan_id: scanId,
+                            scan_timestamp: timestampElement?.textContent?.trim() || new Date().toISOString(),
+                            risk_level: riskElement?.textContent?.trim() || 'NORMAL',
+                            network_ssid: networkElement?.textContent?.trim() || 'Unknown Network',
+                            status: statusElement?.textContent?.trim() || 'COMPLETED',
+                            scan_type: 'Network Scan',
+                            networks_found: 1
+                        };
+                        
+                        scans.push(scan);
+                    } catch (e) {
+                        console.log('Error parsing scan row:', e);
+                    }
+                });
+                
+                return scans.slice(0, 5);
+            } catch (error) {
+                console.error('Error extracting scans from HTML:', error);
+                return [];
+            }
+        }
+
+        // Load Notifications
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/user-status', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateNotifications(data.notifications || []);
+                } else {
+                    updateNotifications([]);
+                }
+            } catch (error) {
+                console.error('Notifications error:', error);
+                updateNotifications([]);
+            }
+        }
+
+
+        // Load Model Status - Updated for new API
+        async function loadModelStatus() {
+            try {
+                console.log('Loading AI model status...');
+                const response = await fetch('/api/model-health', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Model health data received:', data);
+                    updateModelStatus(data);
+                } else {
+                    console.error('Model health API failed with status:', response.status);
+                    updateModelStatus({ 
+                        status: 'error', 
+                        message: `API request failed with status ${response.status}`
+                    });
+                }
+            } catch (error) {
+                console.error('Model status error:', error);
+                updateModelStatus({ 
+                    status: 'critical_error', 
+                    message: error.message 
+                });
+            }
+        }
+
+        // Update WiFi status section
+        function updateWiFiStatus(wifiData) {
+            const content = document.getElementById('wifiStatusContent');
+            
+            if (!wifiData || (!wifiData.connected && !wifiData.error)) {
+                content.innerHTML = `
+                    <div class="wifi-status">
+                        <div class="wifi-info">
+                            <h3 style="color: #f85149;">Not Connected</h3>
+                            <div class="wifi-details">No active WiFi connection detected</div>
+                        </div>
+                        <div class="signal-strength">
+                            <i class="fas fa-wifi-slash" style="color: #f85149; font-size: 24px;"></i>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (wifiData.error) {
+                content.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <div>Error loading WiFi status</div>
+                        <div style="font-size: 12px; margin-top: 5px;">${wifiData.message || wifiData.error}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!wifiData.connected) {
+                content.innerHTML = `
+                    <div class="wifi-status">
+                        <div class="wifi-info">
+                            <h3 style="color: #fb8500;">Disconnected</h3>
+                            <div class="wifi-details">${wifiData.message || 'No WiFi connection'}</div>
+                        </div>
+                        <div class="signal-strength">
+                            <i class="fas fa-wifi-slash" style="color: #fb8500; font-size: 24px;"></i>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Connected WiFi
+            const signalStrength = wifiData.signal_strength || -50;
+            const signalBars = getSignalBars(signalStrength);
+            
+            content.innerHTML = `
+                <div class="wifi-status">
+                    <div class="wifi-info">
+                        <h3>${wifiData.ssid || 'Connected Network'}</h3>
+                        <div class="wifi-details">
+                            <div><strong>Security:</strong> ${wifiData.security_type || wifiData.encryption || 'Unknown'}</div>
+                            <div><strong>IP Address:</strong> ${wifiData.ip_address || 'N/A'}</div>
+                            <div><strong>Signal:</strong> ${signalStrength} dBm</div>
+                            ${wifiData.frequency ? `<div><strong>Frequency:</strong> ${wifiData.frequency}</div>` : ''}
+                            ${wifiData.channel ? `<div><strong>Channel:</strong> ${wifiData.channel}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="signal-strength">
+                        <div class="signal-bars">
+                            ${signalBars}
+                        </div>
+                        <span style="color: #8892b0; font-size: 12px; margin-top: 8px;">
+                            ${getSignalQuality(signalStrength)}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update risk summary section
+        function updateRiskSummary(riskData) {
+            console.log('Risk Summary Data Received:', riskData);
+            
+            const content = document.getElementById('riskSummaryContent');
+            
+            if (!riskData) {
+                content.innerHTML = '<div class="no-data">Risk data unavailable</div>';
+                return;
+            }
+
+            const riskLevel = riskData.overall_risk || 'UNKNOWN';
+            const threatCount = riskData.threat_count || 0;
+            const lastScan = riskData.last_scan ? new Date(riskData.last_scan).toLocaleString() : 'Never';
+            
+            // AI Analysis data - Updated for new API structure
+            const aiAnalysis = riskData.ai_analysis || {};
+            const confidence = riskData.confidence ? Math.round(riskData.confidence * 100) : null;
+            const predictionClass = riskData.prediction_class || 'Unknown';
+            const detectedThreats = riskData.detected_threats || [];
+            const networkName = riskData.network_name || 'Unknown Network';
+            const dataSource = riskData.data_source || 'historical';
+            
+            console.log('Threat Analysis:', {
+                riskLevel,
+                threatCount,
+                detectedThreats,
+                predictionClass,
+                dataSource
+            });
+
+            // Format threats for display
+            let threatsSection = '';
+            if (detectedThreats.length > 0) {
+                const threatsList = detectedThreats.map(threat => 
+                    `<div style="font-size: 11px; color: #f85149; margin: 2px 0;"><i class="fas fa-exclamation-triangle"></i> ${threat}</div>`
+                ).join('');
+                
+                let sectionColor = '#f85149';
+                let sectionBg = 'rgba(248, 81, 73, 0.1)';
+                let sectionBorder = 'rgba(248, 81, 73, 0.3)';
+                let sectionTitle = 'Detected Threats';
+                
+                // Special styling for "no scan data" case
+                if (dataSource === 'no_scan_data') {
+                    sectionColor = '#8892b0';
+                    sectionBg = 'rgba(136, 146, 176, 0.1)';
+                    sectionBorder = 'rgba(136, 146, 176, 0.3)';
+                    sectionTitle = 'Action Required';
+                }
+                
+                threatsSection = `
+                    <div style="margin-top: 10px; padding: 10px; background: ${sectionBg}; border: 1px solid ${sectionBorder}; border-radius: 5px;">
+                        <div style="font-size: 12px; color: ${sectionColor}; margin-bottom: 5px; font-weight: bold;">
+                            <i class="fas fa-shield-alt"></i> ${sectionTitle}
+                        </div>
+                        ${threatsList}
+                        ${dataSource === 'no_scan_data' ? 
+                            '<div style="margin-top: 8px;"><button onclick="window.location.href=\'/deep-scan\'" style="background: #64ffda; color: #0d1117; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;">🔍 Run Deep Scan</button></div>' 
+                            : ''
+                        }
+                    </div>
+                `;
+            }
+
+            // WiFi Analysis section
+            let analysisSection = '';
+            if (confidence !== null || dataSource) {
+                let analysisType, statusColor, analysisIcon;
+                
+                switch (dataSource) {
+                    case 'actual_scans':
+                        analysisType = 'Real Scan Data Analysis';
+                        statusColor = '#64ffda';
+                        analysisIcon = 'fas fa-shield-check';
+                        break;
+                    case 'no_connection':
+                        analysisType = 'No WiFi Connection';
+                        statusColor = '#f85149';
+                        analysisIcon = 'fas fa-wifi-slash';
+                        break;
+                    case 'no_scan_data':
+                        analysisType = 'No Scan Data Available';
+                        statusColor = '#8892b0';
+                        analysisIcon = 'fas fa-search-minus';
+                        break;
+                    case 'scan_error':
+                        analysisType = 'Scan Data Error';
+                        statusColor = '#ff0000';
+                        analysisIcon = 'fas fa-exclamation-triangle';
+                        break;
+                    case 'error':
+                        analysisType = 'Analysis Error';
+                        statusColor = '#ff0000';
+                        analysisIcon = 'fas fa-exclamation-triangle';
+                        break;
+                    default:
+                        analysisType = 'Security Analysis';
+                        statusColor = '#64ffda';
+                        analysisIcon = 'fas fa-shield-alt';
+                }
+                
+                analysisSection = `
+                    <div style="margin-top: 10px; padding: 10px; background: rgba(100, 255, 218, 0.1); border-radius: 5px;">
+                        <div style="font-size: 12px; color: ${statusColor}; margin-bottom: 5px;">
+                            <i class="${analysisIcon}"></i> ${analysisType}
+                        </div>
+                        <div style="font-size: 11px; color: #8892b0;">
+                            Network: <span style="color: #fff;">${networkName}</span><br>
+                            Analysis: <span style="color: #fff;">${predictionClass.replace('_', ' ')}</span><br>
+                            ${confidence !== null ? `Confidence: <span style="color: #fff;">${confidence}%</span><br>` : ''}
+                            Source: <span style="color: #fff;">${dataSource.replace('_', ' ')}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Convert technical risk levels to user-friendly display names
+            function getDisplayRiskLevel(riskLevel) {
+                switch (riskLevel?.toUpperCase()) {
+                    case 'CRITICAL': case 'CRITICAL_VULNERABILITY': return 'High Risk';
+                    case 'HIGH': case 'HIGH_RISK': return 'High Risk';
+                    case 'MEDIUM': case 'MEDIUM_RISK': return 'Medium Risk';
+                    case 'LOW': case 'LOW_RISK': return 'Minimal Risk';
+                    case 'NORMAL': return 'Normal';
+                    case 'NO_SCAN_DATA': return 'No Scan Data Available';
+                    case 'NO_CONNECTION': return 'Connection Issue';
+                    case 'ERROR': return 'Analysis Error';
+                    default: return 'Unknown Risk';
+                }
+            }
+            
+            // Handle special cases and connection issues
+            let displayRiskLevel, displayDescription, displayRiskValue;
+            
+            if (riskLevel === 'NO_CONNECTION') {
+                // Override connection issues - if user has internet, assume WiFi works
+                displayRiskLevel = 'Network Connected';
+                displayDescription = 'Click "Analyze Network Risk" to assess security';
+                displayRiskValue = 'Ready to Scan';
+            } else if (riskLevel === 'NO_SCAN_DATA' || riskLevel === 'UNKNOWN') {
+                displayRiskLevel = 'No Scan Data Available';
+                displayDescription = 'No security analysis available for this network';
+                displayRiskValue = 'Scan Required';
+            } else {
+                displayRiskLevel = getDisplayRiskLevel(riskLevel);
+                displayDescription = `${threatCount} active threats detected`;
+                displayRiskValue = getDisplayRiskLevel(riskLevel);
+            }
+            
+            content.innerHTML = `
+                <div class="risk-summary">
+                    <div class="risk-level ${getRiskClass(riskLevel)}">${displayRiskLevel}</div>
+                    <div class="risk-description">
+                        ${displayDescription}
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value">${threatCount}</div>
+                            <div class="stat-label">Threats</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${displayRiskValue}</div>
+                            <div class="stat-label">Risk Level</div>
+                        </div>
+                    </div>
+                    ${threatsSection}
+                    ${analysisSection}
+                    <div style="margin-top: 15px; color: #8892b0; font-size: 12px;">
+                        Last analysis: ${lastScan}
+                    </div>
+                    ${(riskLevel === 'NO_SCAN_DATA' || riskLevel === 'UNKNOWN' || riskLevel === 'NO_CONNECTION' || dataSource === 'no_scan_data' || dataSource === 'no_connection') ? 
+                        `<div style="margin-top: 15px; text-align: center;">
+                            <button onclick="startRiskAnalysis()" id="riskAnalyzerBtn" 
+                                style="background: linear-gradient(135deg, #64ffda, #4ecdc4); 
+                                       color: #0d1117; 
+                                       border: none; 
+                                       padding: 12px 24px; 
+                                       border-radius: 8px; 
+                                       font-size: 14px; 
+                                       font-weight: bold; 
+                                       cursor: pointer; 
+                                       box-shadow: 0 4px 8px rgba(100, 255, 218, 0.3); 
+                                       transition: all 0.3s ease;" 
+                                onmouseover="this.style.transform='translateY(-2px)'" 
+                                onmouseout="this.style.transform='translateY(0)'">
+                                <i class="fas fa-shield-alt"></i> Analyze Network Risk
+                            </button>
+                        </div>` 
+                        : ''
+                    }
+                </div>
+            `;
+        }
+
+        // Update recent scans section
+        function updateRecentScans(scansData) {
+            const content = document.getElementById('recentScansContent');
+            
+            if (!scansData || scansData.length === 0) {
+                content.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px; color: #8892b0;"></i>
+                        <div>No recent scans available</div>
+                        <div style="font-size: 12px; margin-top: 5px;">
+                            <a href="/scan" style="color: #533ee8;">Start your first scan</a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const scansHTML = scansData.slice(0, 5).map(scan => {
+                const scanTimestamp = formatTimestamp(scan.scan_timestamp || scan.created_at || scan.timestamp);
+                const riskLevel = scan.risk_level || 'NORMAL';
+                const networkName = scan.network_ssid || scan.network_name || 'Unknown Network';
+                const scanType = scan.scan_type || 'Network Scan';
+                const networksFound = scan.networks_found || scan.networks_scanned || 1;
+                const vulnerabilityCount = scan.vulnerability_count || scan.high_risk_count || 0;
+                const scanStatus = scan.status || scan.scan_status || 'COMPLETED';
+                
+                return `
+                    <div class="scan-item" onclick="viewScanDetails('${scan.scan_id || scan.id}')">
+                        <div class="scan-info">
+                            <div class="scan-network-name" style="font-weight: 600; color: #ccd6f6; margin-bottom: 4px;">
+                                ${networkName}
+                            </div>
+                            <div class="scan-timestamp" style="color: #8892b0; font-size: 12px; margin-bottom: 4px;">
+                                ${scanTimestamp}
+                            </div>
+                            <div class="scan-details" style="color: #8892b0; font-size: 12px;">
+                                ${scanType} - ${networksFound} network${networksFound !== 1 ? 's' : ''} scanned
+                                ${vulnerabilityCount > 0 ? ` - ${vulnerabilityCount} vulnerabilities` : ''}
+                            </div>
+                            <div class="scan-status" style="color: #8892b0; font-size: 11px; margin-top: 2px;">
+                                Status: ${scanStatus}
+                            </div>
+                        </div>
+                        <div class="scan-badges">
+                            <div class="risk-badge ${getBadgeClass(riskLevel)}">
+                                ${riskLevel}
+                            </div>
+                            ${vulnerabilityCount > 0 ? `
+                                <div class="vuln-badge" style="background: rgba(248, 81, 73, 0.2); color: #f85149; padding: 2px 6px; border-radius: 12px; font-size: 10px; margin-top: 4px;">
+                                    ${vulnerabilityCount} vuln${vulnerabilityCount !== 1 ? 's' : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            content.innerHTML = `
+                <div class="scan-history">
+                    ${scansHTML}
+                    <div class="scan-actions" style="margin-top: 15px; text-align: center;">
+                        <a href="/scan-history" class="btn btn-secondary" style="margin-right: 10px;">
+                            <i class="fas fa-history"></i> View All Scans
+                        </a>
+                        <a href="/scan" class="btn btn-primary">
+                            <i class="fas fa-search"></i> New Scan
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // View scan details function
+        function viewScanDetails(scanId) {
+            if (scanId && scanId !== 'undefined') {
+                window.location.href = `/scan-details/${scanId}`;
+            }
+        }
+
+        // Update notifications section with enhanced real notification display
+        function updateNotifications(notificationsData) {
+            const content = document.getElementById('notificationsContent');
+            const clearButton = document.getElementById('clearNotificationsBtn');
+            
+            if (!notificationsData || notificationsData.length === 0) {
+                content.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-info-circle" style="margin-bottom: 10px; color: #64ffda; font-size: 24px;"></i>
+                        <div>No notifications at this time</div>
+                        <div style="font-size: 12px; color: #8892b0; margin-top: 5px;">System monitoring for security events</div>
+                    </div>
+                `;
+                // Hide clear button when no notifications
+                clearButton.style.display = 'none';
+                return;
+            }
+
+            // Show clear button when notifications are present
+            clearButton.style.display = 'flex';
+
+            // Sort notifications by priority and timestamp
+            const sortedNotifications = notificationsData.sort((a, b) => {
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                const aPriority = priorityOrder[a.level] || 1;
+                const bPriority = priorityOrder[b.level] || 1;
+                
+                if (aPriority !== bPriority) {
+                    return bPriority - aPriority; // Higher priority first
+                }
+                
+                // Same priority, sort by timestamp (newest first)
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+
+            const notificationsHTML = sortedNotifications.slice(0, 6).map(notification => {
+                const levelClass = (notification.level || 'medium').toLowerCase();
+                const iconName = getNotificationIcon(notification.type);
+                const timeAgo = getTimeAgo(notification.timestamp);
+                
+                return `
+                    <div class="notification-item notification-${levelClass}" 
+                         title="${notification.details || notification.message}">
+                        <div class="notification-icon">
+                            <i class="fas fa-${iconName}"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-message">${notification.message}</div>
+                            ${notification.details ? `
+                                <div class="notification-details">${notification.details}</div>
+                            ` : ''}
+                            <div class="notification-time">
+                                <i class="fas fa-clock"></i>
+                                ${timeAgo}
+                            </div>
+                        </div>
+                        <div class="notification-badge notification-badge-${levelClass}">
+                            ${notification.level?.toUpperCase() || 'INFO'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            content.innerHTML = `
+                <div class="notifications-list">
+                    ${notificationsHTML}
+                    ${notificationsData.length > 6 ? `
+                        <div class="notification-footer">
+                            <div style="color: #8892b0; font-size: 12px; text-align: center; padding: 10px;">
+                                Showing ${Math.min(6, notificationsData.length)} of ${notificationsData.length} notifications
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+
+        // Update AI model status section - FIXED to match actual backend API
+        function updateModelStatus(modelData) {
+            const content = document.getElementById('modelStatusContent');
+            
+            if (!modelData) {
+                content.innerHTML = '<div class="no-data">Model status unavailable</div>';
+                return;
+            }
+
+            // Handle critical error state
+            if (modelData.status === 'critical_error' || modelData.error) {
+                const errorMessage = modelData.message || modelData.details || modelData.error || 'Unknown error';
+                content.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px; color: #dc3545;"></i>
+                        <div style="color: #dc3545; font-weight: bold;">AI System Error</div>
+                        <div style="font-size: 12px; margin-top: 5px; color: #8892b0;">${errorMessage}</div>
+                        <div style="margin-top: 10px;">
+                            <button onclick="loadModelStatus()" style="padding: 5px 10px; background: rgba(83, 62, 232, 0.2); border: 1px solid rgba(83, 62, 232, 0.3); color: #533ee8; border-radius: 4px; cursor: pointer;">
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Extract data from actual backend API format
+            const overallStatus = modelData.status || 'unknown';
+            const modelsOnline = modelData.models_online || 0;
+            const modelsTotal = modelData.models_total || 9;
+            const canMakePredictions = modelData.health_summary?.can_make_predictions || false;
+            const recommendation = modelData.health_summary?.recommendation || 'Model status unavailable';
+            const individualModels = modelData.individual_models || {};
+            const ensembleStatus = modelData.ensemble_status || {};
+            const performanceData = modelData.performance || {};
+
+            // Build overall status display with actual data
+            let statusHTML = `
+                <div class="model-summary">
+                    <div class="model-overall-status ${getHealthClass(overallStatus)}">
+                        ${overallStatus.toUpperCase().replace('_', ' ')}
+                    </div>
+                    <div class="model-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${modelsOnline}</div>
+                            <div class="stat-label">Online</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${modelsTotal}</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${canMakePredictions ? 'Yes' : 'No'}</div>
+                            <div class="stat-label">Predictions</div>
+                        </div>
+                    </div>
+                    <div class="model-recommendation">${recommendation}</div>
+                </div>
+            `;
+
+            // Individual model status with actual backend data
+            if (Object.keys(individualModels).length > 0) {
+                // Display all actual models from backend (matching backend model names)
+                const modelOrder = ['cnn', 'lstm', 'gnn', 'bert', 'random_forest', 'gradient_boosting', 'cnn_lstm_hybrid', 'attention'];
+                
+                let modelsHTML = '<div class="model-status-grid">';
+                
+                modelOrder.forEach(modelKey => {
+                    const model = individualModels[modelKey];
+                    if (model) {
+                        const displayName = getModelDisplayName(modelKey);
+                        const status = model.status || 'unknown';
+                        const modelName = model.model_name || modelKey;
+                        const modelType = model.model_type || 'unknown';
+                        const fileSize = model.file_size || '';
+                        const errorText = model.error ? `Error: ${model.error}` : 
+                                        model.note ? `Note: ${model.note}` : 
+                                        `${displayName} (${modelType})`;
+
+                        modelsHTML += `
+                            <div class="model-item" title="${errorText}">
+                                <div class="model-name">
+                                    ${displayName}
+                                    ${fileSize ? `<div style="font-size: 10px; color: #8892b0;">${fileSize}</div>` : ''}
+                                </div>
+                                <div class="model-health ${getHealthClass(status)}">
+                                    ${status.toUpperCase().replace('_', ' ')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                modelsHTML += '</div>';
+                statusHTML += modelsHTML;
+            }
+
+            // Ensemble status with robust error handling
+            let ensembleDisplayStatus = 'OPERATIONAL';
+            let ensembleHealthClass = 'health-healthy';
+            let ensembleModelsCount = modelsOnline;
+            let ensembleDetails = '';
+            let ensembleHasError = false;
+
+            if (ensembleStatus && Object.keys(ensembleStatus).length > 0) {
+                const status = ensembleStatus.status || 'operational';
+                
+                // Check if ensemble status indicates an error
+                if (status === 'error' || ensembleStatus.error || ensembleStatus.models_in_ensemble === 0) {
+                    ensembleHasError = true;
+                    ensembleDisplayStatus = 'ERROR';
+                    ensembleHealthClass = 'health-error';
+                    
+                    // Use modelsOnline as fallback count since ensemble calculation failed
+                    ensembleModelsCount = modelsOnline;
+                    
+                    if (ensembleStatus.error) {
+                        ensembleDetails = `Error: ${ensembleStatus.error}`;
+                    } else {
+                        ensembleDetails = 'Ensemble calculation failed, using fallback';
+                    }
+                } else {
+                    // Normal ensemble status processing
+                    ensembleDisplayStatus = status.toUpperCase();
+                    ensembleHealthClass = getHealthClass(status);
+                    
+                    // Use ensemble count if available and > 0, otherwise fallback to modelsOnline
+                    if (ensembleStatus.models_in_ensemble !== undefined && ensembleStatus.models_in_ensemble > 0) {
+                        ensembleModelsCount = ensembleStatus.models_in_ensemble;
+                    } else {
+                        ensembleModelsCount = modelsOnline;
+                    }
+                    
+                    if (ensembleStatus.confidence_threshold) {
+                        ensembleDetails = `Threshold: ${(ensembleStatus.confidence_threshold * 100).toFixed(1)}%`;
+                    }
+                    
+                    if (ensembleStatus.agreement_score) {
+                        ensembleDetails += ensembleDetails ? ', ' : '';
+                        ensembleDetails += `Agreement: ${(ensembleStatus.agreement_score * 100).toFixed(1)}%`;
+                    }
+                    
+                    // Show warning if ensemble is in fallback mode
+                    if (ensembleStatus.warning) {
+                        ensembleDetails = `⚠️ ${ensembleStatus.warning}`;
+                        ensembleDisplayStatus = 'FALLBACK';
+                        ensembleHealthClass = 'health-partial';
+                    }
+                }
+            } else {
+                // Determine ensemble status based on models online (fallback when no ensemble data)
+                if (modelsOnline >= 7) {
+                    ensembleDisplayStatus = 'OPTIMAL';
+                    ensembleHealthClass = 'health-healthy';
+                } else if (modelsOnline >= 5) {
+                    ensembleDisplayStatus = 'GOOD';
+                    ensembleHealthClass = 'health-healthy';
+                } else if (modelsOnline >= 3) {
+                    ensembleDisplayStatus = 'FUNCTIONAL';
+                    ensembleHealthClass = 'health-degraded';
+                } else if (modelsOnline >= 1) {
+                    ensembleDisplayStatus = 'LIMITED';
+                    ensembleHealthClass = 'health-partial';
+                } else {
+                    ensembleDisplayStatus = 'OFFLINE';
+                    ensembleHealthClass = 'health-critical';
+                }
+                ensembleDetails = 'Using fallback calculation';
+            }
+
+            statusHTML += `
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(100, 255, 218, 0.1);">
+                    <div style="text-align: center;">
+                        <div style="color: #64ffda; font-weight: 500; margin-bottom: 5px;">
+                            Ensemble Model
+                            ${ensembleHasError ? '<i class="fas fa-exclamation-triangle" style="margin-left: 5px; color: #fb8500; font-size: 12px;"></i>' : ''}
+                        </div>
+                        <div class="model-health ${ensembleHealthClass}" style="display: inline-block;">
+                            ${ensembleDisplayStatus}
+                        </div>
+                        <div style="font-size: 12px; color: #8892b0; margin-top: 5px;">
+                            ${ensembleModelsCount} model${ensembleModelsCount !== 1 ? 's' : ''} ${ensembleHasError ? 'available for ensemble' : 'in ensemble'}
+                        </div>
+                        ${ensembleDetails ? `
+                            <div style="font-size: 12px; color: ${ensembleHasError ? '#fb8500' : '#8892b0'};">
+                                ${ensembleDetails}
+                            </div>
+                        ` : ''}
+                        ${ensembleHasError && modelsOnline > 0 ? `
+                            <div style="font-size: 11px; color: #64ffda; margin-top: 5px;">
+                                Individual models still functional
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Performance metrics with actual backend data  
+            if (performanceData && Object.keys(performanceData).length > 0 && !performanceData.error) {
+                statusHTML += `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(100, 255, 218, 0.1);">
+                        <div style="text-align: center; color: #8892b0; font-size: 12px;">
+                            Performance Metrics
+                        </div>
+                        <div style="display: flex; justify-content: space-around; margin-top: 10px; font-size: 11px;">
+                `;
+                
+                if (performanceData.model_accuracy) {
+                    statusHTML += `
+                        <div style="text-align: center;">
+                            <div style="color: #64ffda;">${(performanceData.model_accuracy * 100).toFixed(1)}%</div>
+                            <div style="color: #8892b0;">Accuracy</div>
+                        </div>
+                    `;
+                }
+                
+                if (performanceData.inference_time) {
+                    statusHTML += `
+                        <div style="text-align: center;">
+                            <div style="color: #64ffda;">${performanceData.inference_time.toFixed(0)}ms</div>
+                            <div style="color: #8892b0;">Inference</div>
+                        </div>
+                    `;
+                }
+                
+                if (performanceData.memory_usage) {
+                    statusHTML += `
+                        <div style="text-align: center;">
+                            <div style="color: #64ffda;">${performanceData.memory_usage}</div>
+                            <div style="color: #8892b0;">Memory</div>
+                        </div>
+                    `;
+                }
+                
+                statusHTML += `
+                        </div>
+                        ${performanceData.drift_detected ? `
+                            <div style="text-align: center; color: #fb8500; font-size: 11px; margin-top: 5px;">
+                                <i class="fas fa-exclamation-triangle"></i> Model drift detected
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // System information from backend
+            if (modelData.system_info && modelData.system_info.corrupted_models && modelData.system_info.corrupted_models.length > 0) {
+                statusHTML += `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(100, 255, 218, 0.1);">
+                        <div style="text-align: center; color: #fb8500; font-size: 12px;">
+                            <i class="fas fa-exclamation-triangle"></i> Corrupted Models
+                        </div>
+                        <div style="font-size: 11px; color: #8892b0; text-align: center; margin-top: 5px;">
+                            ${modelData.system_info.corrupted_models.join(', ')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Last check timestamp
+            const lastCheck = modelData.last_check;
+            if (lastCheck) {
+                statusHTML += `
+                    <div style="text-align: center; margin-top: 15px; color: #8892b0; font-size: 11px;">
+                        Last check: ${formatTimestamp(lastCheck)}
+                    </div>
+                `;
+            }
+
+            content.innerHTML = statusHTML;
+        }
+
+        // Helper function to get model display names
+        function getModelDisplayName(modelName) {
+            const displayNames = {
+                'cnn': 'CNN Vulnerability',
+                'lstm': 'LSTM Temporal',
+                'gnn': 'GNN Network', 
+                'bert': 'Crypto-BERT',
+                'random_forest': 'Random Forest',
+                'gradient_boosting': 'Gradient Boost',
+                'cnn_lstm_hybrid': 'CNN-LSTM Hybrid',
+                'attention': 'Attention Model'
+            };
+            return displayNames[modelName] || modelName.replace('_', ' ').toUpperCase();
+        }
+
+        // Helper functions
+        function getSignalBars(signalStrength) {
+            const strength = Math.abs(signalStrength);
+            let bars = '';
+            
+            for (let i = 1; i <= 4; i++) {
+                let barClass = 'bar';
+                if (strength > 80) barClass += ' weak';
+                else if (strength > 60) barClass += i <= 2 ? ' medium' : ' weak';
+                else if (strength > 40) barClass += i <= 3 ? ' strong' : ' medium';
+                else barClass += ' strong';
+                
+                bars += `<div class="${barClass}"></div>`;
+            }
+            
+            return bars;
+        }
+
+        function getSignalQuality(signalStrength) {
+            const strength = Math.abs(signalStrength);
+            if (strength > 80) return 'Weak';
+            if (strength > 60) return 'Fair';
+            if (strength > 40) return 'Good';
+            return 'Excellent';
+        }
+
+        function getRiskClass(riskLevel) {
+            switch (riskLevel.toUpperCase()) {
+                case 'CRITICAL': case 'CRITICAL_VULNERABILITY': return 'risk-critical';
+                case 'HIGH': case 'HIGH_RISK': return 'risk-high';
+                case 'MEDIUM': case 'MEDIUM_RISK': return 'risk-medium';
+                case 'LOW': case 'LOW_RISK': return 'risk-low';
+                case 'NORMAL': return 'risk-normal';
+                case 'NO_DATA': case 'NO_CONNECTION': case 'NO_SCAN_DATA': return 'risk-no-data';
+                case 'ERROR': return 'risk-error';
+                default: return 'risk-normal';
+            }
+        }
+
+        function getBadgeClass(riskLevel) {
+            switch (riskLevel.toUpperCase()) {
+                case 'CRITICAL': case 'CRITICAL_VULNERABILITY': return 'badge-critical';
+                case 'HIGH': case 'HIGH_RISK': return 'badge-high';
+                case 'LOW': case 'LOW_RISK': return 'badge-low';
+                case 'NORMAL': return 'badge-normal';
+                default: return 'badge-normal';
+            }
+        }
+
+        function getHealthClass(health) {
+            if (!health) return 'health-unknown';
+            
+            switch (health.toLowerCase()) {
+                case 'healthy': case 'available': case 'operational': case 'optimal': return 'health-healthy';
+                case 'degraded': case 'limited': case 'functional': return 'health-degraded';
+                case 'partial': return 'health-partial';
+                case 'critical': case 'critical_error': case 'offline': return 'health-critical';
+                case 'error': return 'health-error';
+                case 'not_loaded': case 'unavailable': return 'health-not_loaded';
+                case 'unknown': return 'health-unknown';
+                default: return 'health-degraded';
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'security_alert': return 'shield-alt';
+                case 'security_warning': return 'exclamation-triangle';
+                case 'system_warning': return 'exclamation-triangle';
+                case 'system_error': return 'times-circle';
+                case 'system': return 'cog';
+                case 'system_status': return 'check-circle';
+                case 'activity': return 'chart-line';
+                case 'welcome': return 'hand-peace';
+                case 'reminder': return 'clock';
+                case 'scan': return 'search';
+                case 'model': return 'brain';
+                case 'update': return 'download';
+                default: return 'info-circle';
+            }
+        }
+
+        function getTimeAgo(timestamp) {
+            if (!timestamp) return 'Unknown';
+            
+            try {
+                const now = new Date();
+                const time = new Date(timestamp);
+                const diffInSeconds = Math.floor((now - time) / 1000);
+                
+                if (diffInSeconds < 60) {
+                    return 'Just now';
+                } else if (diffInSeconds < 3600) {
+                    const minutes = Math.floor(diffInSeconds / 60);
+                    return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+                } else if (diffInSeconds < 86400) {
+                    const hours = Math.floor(diffInSeconds / 3600);
+                    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+                } else {
+                    const days = Math.floor(diffInSeconds / 86400);
+                    return `${days} day${days !== 1 ? 's' : ''} ago`;
+                }
+            } catch (error) {
+                return formatTimestamp(timestamp);
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Unknown';
+            
+            try {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+                
+                if (diffInMinutes < 1) return 'Just now';
+                if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+                if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+                
+                return date.toLocaleDateString();
+            } catch (error) {
+                return 'Invalid date';
+            }
+        }
+
+        // Connection status management
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            fetch('/api/health')
+                .then(response => {
+                    if (response.ok) {
+                        statusElement.className = 'status-indicator status-online';
+                        statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Online</span>';
+                    } else {
+                        statusElement.className = 'status-indicator status-offline';
+                        statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Offline</span>';
+                    }
+                })
+                .catch(() => {
+                    statusElement.className = 'status-indicator status-offline';
+                    statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Offline</span>';
+                });
+        }
+
+        // Dashboard refresh functionality
+        function refreshDashboard() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.style.animation = 'spin 1s ease-in-out infinite';
+            
+            loadDashboardData().then(() => {
+                setTimeout(() => {
+                    refreshIcon.style.animation = '';
+                }, 1000);
+            });
+        }
+
+        // Risk Analysis function - triggers automatic scan and analysis
+        async function startRiskAnalysis() {
+            const button = document.getElementById('riskAnalyzerBtn');
+            const originalText = button.innerHTML;
+            
+            try {
+                // Update button to show loading state
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Network...';
+                button.disabled = true;
+                button.style.background = 'rgba(136, 146, 176, 0.3)';
+                
+                console.log('Starting automatic risk analysis...');
+                
+                // Step 1: Get current WiFi info - try multiple methods
+                let wifiData = null;
+                
+                // Try primary WiFi endpoint
+                try {
+                    const wifiResponse = await fetch('/current-wifi');
+                    if (wifiResponse.ok) {
+                        wifiData = await wifiResponse.json();
+                    }
+                } catch (e) {
+                    console.log('Primary WiFi endpoint failed, trying alternative...');
+                }
+                
+                // If no WiFi data, use network name from analysis section
+                if (!wifiData || !wifiData.connected || !wifiData.ssid) {
+                    // Extract network name from current display or use default
+                    let extractedNetwork = 'CurrentNetwork';
+                    
+                    // Try to get network name from the analysis section
+                    try {
+                        const analysisText = document.querySelector('.risk-summary')?.textContent;
+                        if (analysisText && analysisText.includes('Network:')) {
+                            const match = analysisText.match(/Network:\s*([^\n]+)/);
+                            if (match && match[1] && match[1].trim() !== 'Not Connected') {
+                                extractedNetwork = match[1].trim();
+                            }
+                        }
+                    } catch (e) {
+                        console.log('Could not extract network name, using default');
+                    }
+                    
+                    // Create synthetic WiFi data for analysis
+                    wifiData = {
+                        connected: true,
+                        ssid: extractedNetwork,
+                        signal_strength: -50,
+                        encryption: 'WPA2',
+                        synthetic: true
+                    };
+                    
+                    console.log(`Using network name for analysis: ${extractedNetwork}`);
+                }
+                
+                console.log('Current WiFi:', wifiData.ssid);
+                
+                // Step 2: Trigger automatic scan for current network
+                const scanResponse = await fetch('/api/auto-risk-scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        network_ssid: wifiData.ssid,
+                        auto_analyze: true
+                    })
+                });
+                
+                if (!scanResponse.ok) {
+                    throw new Error('Failed to start network analysis');
+                }
+                
+                const scanResult = await scanResponse.json();
+                console.log('Scan completed:', scanResult);
+                
+                // Step 3: Update button to show completion
+                button.innerHTML = '<i class="fas fa-check"></i> Analysis Complete!';
+                button.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                
+                // Step 4: Refresh dashboard to show new results
+                setTimeout(() => {
+                    loadDashboardData();
+                }, 1000);
+                
+                // Step 5: Show success notification
+                showNotification(`Network risk analysis completed for ${wifiData.ssid}`, 'success');
+                
+            } catch (error) {
+                console.error('Risk analysis error:', error);
+                
+                // Reset button on error
+                button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Analysis Failed';
+                button.style.background = 'rgba(248, 81, 73, 0.7)';
+                
+                // Show error notification
+                showNotification(`Failed to analyze network risk: ${error.message}`, 'error');
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    button.style.background = 'linear-gradient(135deg, #64ffda, #4ecdc4)';
+                }, 3000);
+            }
+        }
+
+        // Sign out functionality
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                // Show loading state
+                const signoutBtn = document.querySelector('.signout-button');
+                const originalContent = signoutBtn.innerHTML;
+                signoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing out...';
+                signoutBtn.disabled = true;
+                
+                // Perform logout
+                fetch('/logout', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    // Clear any cached data regardless of response
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    if (response.ok) {
+                        // Redirect to index page (home page) instead of login
+                        window.location.href = '/';
+                    } else {
+                        // Even if there's an error, still redirect to index for security
+                        console.warn('Logout response not OK, but redirecting anyway for security');
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during logout:', error);
+                    // For security, redirect to index page even if there's an error
+                    console.warn('Logout failed, redirecting to home page for security');
+                    window.location.href = '/';
+                });
+            }
+        }
+
+        function startAutoRefresh() {
+            // Refresh every 30 seconds
+            refreshInterval = setInterval(() => {
+                if (!isLoading) {
+                    loadDashboardData();
+                }
+            }, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Quick scan functionality
+        async function performQuickScan() {
+            try {
+                showNotification('Starting quick scan...', 'info');
+                
+                const response = await fetch('/api/quick-scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification('Quick scan initiated successfully', 'success');
+                    
+                    // Refresh dashboard after a short delay
+                    setTimeout(() => {
+                        loadDashboardData();
+                    }, 2000);
+                } else {
+                    showNotification('Failed to start quick scan', 'error');
+                }
+            } catch (error) {
+                console.error('Quick scan error:', error);
+                showNotification('Error starting quick scan', 'error');
+            }
+        }
+
+        // Global error display
+        function showGlobalError(message) {
+            const sections = ['wifiStatusContent', 'riskSummaryContent', 'recentScansContent', 
+                            'notificationsContent', 'modelStatusContent'];
+            
+            sections.forEach(sectionId => {
+                const element = document.getElementById(sectionId);
+                if (element && element.querySelector('.loading')) {
+                    element.innerHTML = `
+                        <div class="error-state">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <div>${message}</div>
+                            <button onclick="refreshDashboard()" style="margin-top: 10px; padding: 5px 10px; background: rgba(83, 62, 232, 0.2); border: 1px solid rgba(83, 62, 232, 0.3); color: #533ee8; border-radius: 4px; cursor: pointer;">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Clear all notifications function
+        async function clearAllNotifications() {
+            // Confirm with user before clearing
+            if (!confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+                return;
+            }
+            
+            const clearButton = document.getElementById('clearNotificationsBtn');
+            
+            // Show loading state
+            const originalText = clearButton.innerHTML;
+            clearButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+            clearButton.disabled = true;
+            
+            try {
+                const response = await fetch('/api/clear-all-notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success notification
+                    showNotification(`Cleared ${data.cleared_count} notifications`, 'success');
+                    
+                    // Reload notifications to reflect changes
+                    await loadNotifications();
+                } else {
+                    showNotification(`Error clearing notifications: ${data.error}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error clearing notifications:', error);
+                showNotification('Error clearing notifications', 'error');
+            } finally {
+                // Restore button state
+                clearButton.innerHTML = originalText;
+                clearButton.disabled = false;
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${getNotificationColor(type)};
+                color: white;
+                border-radius: 8px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(10px);
+                border: 1px solid ${getNotificationBorderColor(type)};
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        function getNotificationColor(type) {
+            switch (type) {
+                case 'success': return 'rgba(46, 160, 67, 0.9)';
+                case 'error': return 'rgba(248, 81, 73, 0.9)';
+                case 'warning': return 'rgba(251, 133, 0, 0.9)';
+                default: return 'rgba(83, 62, 232, 0.9)';
+            }
+        }
+
+        function getNotificationBorderColor(type) {
+            switch (type) {
+                case 'success': return '#2ea043';
+                case 'error': return '#f85149';
+                case 'warning': return '#fb8500';
+                default: return '#533ee8';
+            }
+        }
+
+        // Navigation active state management
+        function updateActiveNavigation() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Page visibility handling
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+                loadDashboardData();
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+
+        // Update navigation on load
+        updateActiveNavigation();
+
+        // Model Status Diagnostics - Additional functionality for debugging
+        function showModelDiagnostics() {
+            fetch('/api/model-diagnostics', {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Model Diagnostics:', data);
+                
+                let diagnosticsHTML = `
+                    <div style="background: rgba(15, 20, 25, 0.9); padding: 20px; border-radius: 8px; margin: 10px; max-height: 400px; overflow-y: auto;">
+                        <h4 style="color: #64ffda; margin-bottom: 15px;">Model Diagnostics</h4>
+                `;
+
+                if (data.dependency_check) {
+                    diagnosticsHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: #ccd6f6;">Dependencies:</strong><br>
+                            <span style="color: ${data.dependency_check.tensorflow_available ? '#2ea043' : '#f85149'};">
+                                TensorFlow: ${data.dependency_check.tensorflow_available ? 'Available' : 'Missing'}
+                                ${data.tensorflow_version ? ` (v${data.tensorflow_version})` : ''}
+                            </span><br>
+                            <span style="color: ${data.dependency_check.sklearn_available ? '#2ea043' : '#f85149'};">
+                                Scikit-learn: ${data.dependency_check.sklearn_available ? 'Available' : 'Missing'}
+                                ${data.sklearn_version ? ` (v${data.sklearn_version})` : ''}
+                            </span><br>
+                            <span style="color: ${data.dependency_check.numpy_available ? '#2ea043' : '#f85149'};">
+                                NumPy: ${data.dependency_check.numpy_available ? 'Available' : 'Missing'}
+                                ${data.numpy_version ? ` (v${data.numpy_version})` : ''}
+                            </span>
+                        </div>
+                    `;
+                }
+
+                if (data.available_models && data.available_models.length > 0) {
+                    diagnosticsHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: #ccd6f6;">Available Models:</strong><br>
+                            ${data.available_models.map(model => `<span style="color: #8892b0;">• ${model}</span>`).join('<br>')}
+                        </div>
+                    `;
+                }
+
+                if (data.loaded_models && data.loaded_models.length > 0) {
+                    diagnosticsHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: #ccd6f6;">Loaded Models:</strong><br>
+                            ${data.loaded_models.map(model => `<span style="color: #2ea043;">✓ ${model}</span>`).join('<br>')}
+                        </div>
+                    `;
+                }
+
+                if (data.load_errors && data.load_errors.length > 0) {
+                    diagnosticsHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: #f85149;">Load Errors:</strong><br>
+                            ${data.load_errors.map(error => `<span style="color: #f85149;">• ${error}</span>`).join('<br>')}
+                        </div>
+                    `;
+                }
+
+                if (data.cache_statistics) {
+                    diagnosticsHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: #ccd6f6;">Cache Statistics:</strong><br>
+                            <span style="color: #8892b0;">${JSON.stringify(data.cache_statistics, null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')}</span>
+                        </div>
+                    `;
+                }
+
+                diagnosticsHTML += `
+                        <button onclick="this.parentElement.remove()" style="background: rgba(248, 81, 73, 0.2); border: 1px solid #f85149; color: #f85149; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                            Close
+                        </button>
+                    </div>
+                `;
+
+                // Show diagnostics in a modal-like overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    z-index: 1000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                overlay.innerHTML = diagnosticsHTML;
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) overlay.remove();
+                };
+                
+                document.body.appendChild(overlay);
+            })
+            .catch(error => {
+                console.error('Diagnostics error:', error);
+                showNotification('Failed to load diagnostics', 'error');
+            });
+        }
+
+        // Enhanced model status monitoring
+        function startModelHealthMonitoring() {
+            // Monitor model health more frequently
+            setInterval(async () => {
+                try {
+                    const response = await fetch('/api/model-health', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Check for critical status changes
+                        if (data.status === 'critical' || data.status === 'critical_error') {
+                            showNotification('Critical: AI models offline!', 'error');
+                        } else if (data.status === 'degraded' && data.models_online < 3) {
+                            showNotification('Warning: Limited AI functionality', 'warning');
+                        }
+                        
+                        // Update model status without full refresh
+                        updateModelStatus(data);
+                    }
+                } catch (error) {
+                    console.error('Model health monitoring error:', error);
+                }
+            }, 60000); // Check every minute
+        }
+
+        // Performance monitoring
+        function trackDashboardPerformance() {
+            const startTime = performance.now();
+            
+            return {
+                measureLoadTime: () => {
+                    const endTime = performance.now();
+                    const loadTime = endTime - startTime;
+                    console.log(`Dashboard loaded in ${loadTime.toFixed(2)}ms`);
+                    
+                    // Log slow loads
+                    if (loadTime > 3000) {
+                        console.warn('Dashboard loading is slow:', loadTime);
+                    }
+                    
+                    return loadTime;
+                }
+            };
+        }
+
+        // Enhanced error handling with retry logic
+        async function fetchWithRetry(url, options = {}, maxRetries = 3) {
+            let lastError;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    lastError = new Error(`HTTP ${response.status}`);
+                } catch (error) {
+                    lastError = error;
+                    console.log(`Fetch attempt ${i + 1} failed for ${url}:`, error.message);
+                }
+                
+                // Wait before retrying (exponential backoff)
+                if (i < maxRetries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+            }
+            
+            throw lastError;
+        }
+
+        // Real-time updates using Socket.IO (if available)
+        function setupWebSocketConnection() {
+            try {
+                // Socket.IO is handled automatically by Flask-SocketIO
+                // No manual WebSocket connection needed
+                console.log('Real-time updates available via Socket.IO');
+                
+            } catch (error) {
+                console.log('Real-time updates not available:', error);
+                return null;
+            }
+        }
+
+        // Real-time updates handled by Socket.IO in the background
+        // No manual message handling needed
+
+        // Initialize performance tracking
+        const performanceTracker = trackDashboardPerformance();
+
+        // Initialize WebSocket connection (optional)
+        let websocket = setupWebSocketConnection();
+
+        // Start model health monitoring
+        startModelHealthMonitoring();
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+R or F5 to refresh dashboard
+            if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+                e.preventDefault();
+                refreshDashboard();
+            }
+            
+            // Ctrl+D to show model diagnostics
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                showModelDiagnostics();
+            }
+            
+            // Ctrl+S to start quick scan
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                performQuickScan();
+            }
+        });
+
+        // Add double-click on model status card to show diagnostics
+        document.getElementById('modelStatusContent').addEventListener('dblclick', function() {
+            showModelDiagnostics();
+        });
+
+        // Cleanup WebSocket on page unload
+        window.addEventListener('beforeunload', function() {
+            if (websocket) {
+                websocket.close();
+            }
+        });
+
+        // Measure final load time
+        window.addEventListener('load', function() {
+            performanceTracker.measureLoadTime();
+        });
+
+        // Export key functions for debugging
+        window.wisecDashboard = {
+            refresh: refreshDashboard,
+            loadModelStatus: loadModelStatus,
+            showDiagnostics: showModelDiagnostics,
+            websocket: websocket
+        };
+
+        console.log('WISEC Dashboard initialized successfully');
+        console.log('Available commands: wisecDashboard.refresh(), wisecDashboard.showDiagnostics()');
+    </script>
+</body>
+</html>

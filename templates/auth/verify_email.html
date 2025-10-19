@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - Wi-Fi Security System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .verification-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .verification-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .verification-icon.success { color: #28a745; }
+        .verification-icon.warning { color: #ffc107; }
+        .verification-icon.error { color: #dc3545; }
+        .verification-icon.pending { color: #17a2b8; }
+
+        .verification-header h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+        }
+
+        .verification-header p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .flash-messages {
+            margin-bottom: 30px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-message.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .flash-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .form-control.valid {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+
+        .form-control.error {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            min-width: 200px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #545b62);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .email-display {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            color: #495057;
+        }
+
+        .verification-steps {
+            text-align: left;
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .verification-steps h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .verification-steps ol {
+            padding-left: 20px;
+        }
+
+        .verification-steps li {
+            margin-bottom: 8px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .help-section {
+            background-color: #e9ecef;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .help-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .help-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-section li {
+            margin-bottom: 10px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .help-section strong {
+            color: #333;
+        }
+
+        .countdown {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .countdown-timer {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .verification-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .verification-header h1 {
+                font-size: 2rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="verification-container">
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Default/Resend Verification State -->
+        <div class="verification-header">
+            <span class="verification-icon pending">📧</span>
+            <h1>Verify Your Email</h1>
+            <p>Please check your email and click the verification link to activate your account.</p>
+        </div>
+        
+        <div class="verification-content">
+            <div class="verification-steps">
+                <h3>How to Complete Verification:</h3>
+                <ol>
+                    <li>Check your email inbox for a message from Wi-Fi Security System</li>
+                    <li>Look for the subject line "Wi-Fi Security System - Email Verification"</li>
+                    <li>Click the "Verify Email Address" button in the email</li>
+                    <li>You'll be redirected back here with confirmation</li>
+                    <li>If you don't see the email, check your spam folder</li>
+                </ol>
+            </div>
+            
+            <form method="POST" action="{{ url_for('auth.resend_verification') }}" id="resendForm">
+                {{ form.hidden_tag() if form }}
+                <div class="form-group">
+                    {% if form and form.email %}
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", placeholder="Enter your email address") }}
+                        {% if form.email.errors %}
+                            <div class="error-message">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email address" required>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="resendBtn">
+                    Resend Verification Email
+                </button>
+                
+                <div class="countdown" id="resendCountdown" style="display: none;">
+                    <div>Please wait before requesting another email</div>
+                    <div class="countdown-timer" id="countdownTimer"></div>
+                </div>
+            </form>
+            
+            <div class="loading" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Sending verification email...</p>
+            </div>
+            
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                Back to Login
+            </a>
+        </div>
+
+        <!-- Help Section -->
+        <div class="help-section">
+            <h3>Need Help?</h3>
+            <ul>
+                <li><strong>Email not received?</strong> Check your spam/junk folder</li>
+                <li><strong>Wrong email?</strong> You can register with a different email address</li>
+                <li><strong>Link expired?</strong> Use the form above to request a new verification email</li>
+                <li><strong>Still having issues?</strong> Contact our support team</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Resend cooldown timer
+        let resendCooldown = 0;
+        const resendBtn = document.getElementById('resendBtn');
+        const resendCountdown = document.getElementById('resendCountdown');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        // Check if there's a cooldown in localStorage
+        const lastResendTime = localStorage.getItem('lastResendTime');
+        if (lastResendTime) {
+            const timeDiff = Date.now() - parseInt(lastResendTime);
+            const cooldownTime = 60000; // 1 minute
+            
+            if (timeDiff < cooldownTime) {
+                startCooldown(Math.ceil((cooldownTime - timeDiff) / 1000));
+            }
+        }
+        
+        // Form submission handling
+        document.getElementById('resendForm').addEventListener('submit', function(e) {
+            if (resendCooldown > 0) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Show loading spinner
+            resendBtn.style.display = 'none';
+            loadingSpinner.style.display = 'block';
+            
+            // Set cooldown after form submission
+            localStorage.setItem('lastResendTime', Date.now().toString());
+        });
+        
+        function startCooldown(seconds) {
+            resendCooldown = seconds;
+            resendBtn.disabled = true;
+            resendCountdown.style.display = 'block';
+            
+            const interval = setInterval(() => {
+                resendCooldown--;
+                countdownTimer.textContent = `${resendCooldown} seconds`;
+                
+                if (resendCooldown <= 0) {
+                    clearInterval(interval);
+                    resendBtn.disabled = false;
+                    resendCountdown.style.display = 'none';
+                    localStorage.removeItem('lastResendTime');
+                }
+            }, 1000);
+            
+            countdownTimer.textContent = `${resendCooldown} seconds`;
+        }
+        
+        // Email validation
+        const emailInput = document.getElementById('email');
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                const email = this.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (emailRegex.test(email)) {
+                    this.classList.remove('error');
+                    this.classList.add('valid');
+                } else if (email.length > 0) {
+                    this.classList.remove('valid');
+                    this.classList.add('error');
+                } else {
+                    this.classList.remove('valid', 'error');
+                }
+            });
+        }
+        
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s ease';
+                message.style.opacity = '0';
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 500);
+            });
+        }, 5000);
+        
+        // Check verification status periodically
+        let checkCount = 0;
+        const maxChecks = 10; // Check for 5 minutes max
+        
+        function checkVerificationStatus() {
+            if (checkCount >= maxChecks) return;
+            
+            const emailInput = document.getElementById('email');
+            if (!emailInput || !emailInput.value) return;
+            
+            fetch(`/auth/api/check-verification-status?email=${encodeURIComponent(emailInput.value)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.verified) {
+                    // Show success message and redirect
+                    window.location.href = "{{ url_for('auth.login') }}?verified=1";
+                }
+            })
+            .catch(error => {
+                console.log('Verification status check failed:', error);
+            });
+            
+            checkCount++;
+        }
+        
+        // Check every 30 seconds
+        setInterval(checkVerificationStatus, 30000);
+        
+        // Refresh page when user comes back from email client
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && window.performance.navigation.type !== window.performance.navigation.TYPE_RELOAD) {
+                // User returned to tab, check verification status
+                checkVerificationStatus();
+            }
+        });
+    </script>
+</body>
+</html>

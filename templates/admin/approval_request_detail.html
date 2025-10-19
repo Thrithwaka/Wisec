@@ -1,0 +1,253 @@
+{% extends "admin/admin_base_new.html" %}
+
+{% block title %}Request Details - {{ request.user.email }}{% endblock %}
+{% block breadcrumb %}
+<a href="{{ url_for('admin.approval_requests') }}">Approval Requests</a> > Request #{{ request.id }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-eye"></i> Request Details #{{ request.id }}
+    </h1>
+    <p class="page-description">Complete information submitted by {{ request.user.email if request.user else 'Unknown User' }}</p>
+</div>
+
+<!-- Request Status and Actions -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title">Request Status & Actions</h3>
+        <div style="display: flex; gap: 10px;">
+            {% if request.status.value == 'pending' %}
+                <button onclick="quickApprove({{ request.id }})" class="btn btn-success">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+                <button onclick="quickReject({{ request.id }})" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+                <button onclick="setUnderReview({{ request.id }})" class="btn btn-warning">
+                    <i class="fas fa-eye"></i> Mark Under Review
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Status</label>
+            <div>
+                <span class="status-badge {% if request.status.value == 'pending' %}status-pending{% elif request.status.value == 'approved' %}status-active{% elif request.status.value == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
+                    {{ request.status.value.replace('_', ' ').title() }}
+                </span>
+            </div>
+        </div>
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Priority</label>
+            <div>
+                <span class="status-badge {% if request.priority.value == 'urgent' %}status-rejected{% elif request.priority.value == 'high' %}status-pending{% else %}status-active{% endif %}">
+                    {{ request.priority.value.upper() }}
+                </span>
+            </div>
+        </div>
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Submitted</label>
+            <div>{{ request.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+        </div>
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Days Pending</label>
+            <div>{{ request.days_pending }} days</div>
+        </div>
+    </div>
+</div>
+
+<!-- User Information -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-user"></i> User Information</h3>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">User Email</label>
+            <div>{{ request.user.email if request.user else 'Unknown' }}</div>
+        </div>
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">User ID</label>
+            <div>#{{ request.user_id }}</div>
+        </div>
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Organization</label>
+            <div>{{ request.organization or 'Not specified' }}</div>
+        </div>
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Role in Organization</label>
+            <div>{{ request.organization_role or 'Not specified' }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-text"></i> Request Details</h3>
+    </div>
+    
+    <div style="display: grid; gap: 25px;">
+        <div>
+            <label style="color: #64ffda; font-weight: 600; margin-bottom: 8px; display: block;">Purpose for Advanced Access</label>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #64ffda;">
+                {{ request.purpose }}
+            </div>
+        </div>
+        
+        <div>
+            <label style="color: #64ffda; font-weight: 600; margin-bottom: 8px; display: block;">Specific Use Case</label>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #64ffda;">
+                {{ request.use_case }}
+            </div>
+        </div>
+        
+        {% if request.expected_usage %}
+        <div>
+            <label style="color: #64ffda; font-weight: 600; margin-bottom: 8px; display: block;">Expected Usage Patterns</label>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #64ffda;">
+                {{ request.expected_usage }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Document Information -->
+{% if request.organization_document or request.identification_document %}
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-paperclip"></i> Uploaded Documents</h3>
+    </div>
+    
+    <div style="display: grid; gap: 15px;">
+        {% if request.organization_document %}
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Organization Document</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-file"></i>
+                <span>{{ request.organization_document.split('/')[-1] if request.organization_document else 'No file' }}</span>
+                {% if request.organization_document %}
+                <a href="{{ request.organization_document }}" target="_blank" class="btn btn-secondary" style="font-size: 12px; padding: 4px 8px;">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if request.identification_document %}
+        <div>
+            <label style="color: #8892b0; font-size: 12px; text-transform: uppercase;">Identification Document</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-id-card"></i>
+                <span>{{ request.identification_document.split('/')[-1] if request.identification_document else 'No file' }}</span>
+                {% if request.identification_document %}
+                <a href="{{ request.identification_document }}" target="_blank" class="btn btn-secondary" style="font-size: 12px; padding: 4px 8px;">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Admin Notes and Actions -->
+{% if request.admin_notes or request.rejection_reason %}
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-user-shield"></i> Admin Review</h3>
+    </div>
+    
+    {% if request.admin_notes %}
+    <div style="margin-bottom: 15px;">
+        <label style="color: #64ffda; font-weight: 600; margin-bottom: 8px; display: block;">Admin Notes</label>
+        <div style="background: rgba(100, 255, 218, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #64ffda;">
+            {{ request.admin_notes }}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if request.rejection_reason %}
+    <div>
+        <label style="color: #f87171; font-weight: 600; margin-bottom: 8px; display: block;">Rejection Reason</label>
+        <div style="background: rgba(248, 113, 113, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #f87171;">
+            {{ request.rejection_reason }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Messages/Communication -->
+{% if messages %}
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-comments"></i> Messages</h3>
+    </div>
+    
+    <div style="display: grid; gap: 15px;">
+        {% for message in messages %}
+        <div style="background: {% if message.is_from_admin %}rgba(100, 255, 218, 0.1){% else %}rgba(255, 255, 255, 0.05){% endif %}; padding: 15px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <strong style="color: {% if message.is_from_admin %}#64ffda{% else %}#ccd6f6{% endif %};">
+                    {% if message.is_from_admin %}Admin{% else %}User{% endif %}
+                </strong>
+                <small style="color: #8892b0;">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            <div>{{ message.message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+    <a href="{{ url_for('admin.approval_requests') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Requests
+    </a>
+</div>
+
+<!-- Quick Action Modals (copied from approval_requests1.html) -->
+<div id="quickApproveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; justify-content: center; align-items: center;">
+    <div style="background: #1a1f2e; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
+        <h3 style="color: #64ffda; margin-bottom: 20px;">Approve Request</h3>
+        <form id="quickApproveForm" method="post">
+            <div style="margin-bottom: 20px;">
+                <label style="color: #8892b0; display: block; margin-bottom: 8px;">Admin Notes (Optional)</label>
+                <textarea name="notes" style="width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; color: #ccd6f6; min-height: 80px;" placeholder="Add any notes for this approval..."></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: end;">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-success">Approve Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function quickApprove(requestId) {
+    document.getElementById('quickApproveForm').action = `/admin/approval-request/${requestId}/approve`;
+    document.getElementById('quickApproveModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('quickApproveModal').style.display = 'none';
+}
+
+document.getElementById('quickApproveModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>
+
+{% endblock %}
