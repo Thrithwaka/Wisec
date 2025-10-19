@@ -35,9 +35,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy the application code
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 8000
-
-# Set the command to run the application
-# Assumes your wsgi.py creates a Flask app instance named 'app'
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "wsgi:app"]
+# Set the command to run the application using the PORT environment variable provided by Cloud Run.
+# Default to 8080 if PORT is not set.
+# Use exec to make gunicorn the main process, which is a best practice.
+CMD exec gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 4 --timeout 0 wsgi:app
