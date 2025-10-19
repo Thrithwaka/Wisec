@@ -4,9 +4,10 @@ FROM python:3.10 AS builder
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies that might be required by Python packages
+# Install system dependencies required for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a virtual environment
