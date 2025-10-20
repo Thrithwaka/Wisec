@@ -68,16 +68,16 @@ class Config:
             'inference_time': 40,
             'description': 'Network topology analysis and vulnerability propagation modeling'
         },
-        'crypto_bert': {
-            'file': 'crypto_bert_enhanced.h5',
-            'size': '110.5MB',
-            'params': '4.2M',
-            'max_tokens': 512,
-            'output_classes': 15,
-            'accuracy_target': (95, 98),
-            'inference_time': 80,
-            'description': 'Protocol analysis and cryptographic vulnerability detection'
-        },
+        # 'crypto_bert': {
+        #     'file': 'crypto_bert_enhanced.h5',
+        #     'size': '110.5MB',
+        #     'params': '4.2M',
+        #     'max_tokens': 512,
+        #     'output_classes': 15,
+        #     'accuracy_target': (95, 98),
+        #     'inference_time': 80,
+        #     'description': 'Protocol analysis and cryptographic vulnerability detection'
+        # },
         'cnn_lstm_hybrid': {
             'file': 'wifi_cnn_lstm_model.h5',
             'size': '2.8MB',
@@ -96,16 +96,16 @@ class Config:
             'inference_time': 30,
             'description': 'Attention-focused sequence analysis'
         },
-        'random_forest': {
-            'file': 'wifi_random_forest_model.pkl',
-            'size': '125MB',
-            'trees': 500,
-            'input_dims': 64,
-            'output_classes': 10,
-            'accuracy_target': (85, 88),
-            'inference_time': 20,
-            'description': 'Tree-based ensemble classification'
-        },
+        # 'random_forest': {
+        #     'file': 'wifi_random_forest_model.pkl',
+        #     'size': '125MB',
+        #     'trees': 500,
+        #     'input_dims': 64,
+        #     'output_classes': 10,
+        #     'accuracy_target': (85, 88),
+        #     'inference_time': 20,
+        #     'description': 'Tree-based ensemble classification'
+        # },
         'gradient_boosting': {
             'file': 'wifi_gradient_boosting_model.pkl',
             'size': '647KB',
